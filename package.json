@@ -1,0 +1,42 @@
+{
+  "name": "river-house-belgrade",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@chakra-ui/react": "^2.10.9",
+    "@chakra-ui/theme-tools": "^2.2.9",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@fontsource-variable/inter": "^5.2.8",
+    "@popperjs/core": "^2.11.8",
+    "@saas-ui/auth": "^3.6.6",
+    "@saas-ui/react": "^2.11.4",
+    "bcryptjs": "^2.4.3",
+    "bootstrap": "^5.3.3",
+    "cloudinary": "^2.5.1",
+    "framer-motion": "^11.11.10",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.7.0",
+    "next": "14.2.10",
+    "next-seo": "^7.0.1",
+    "resend": "^4.0.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "react-icons": "^5.5.0",
+    "react-photo-view": "^1.2.6"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/node": "^20.14.10",
+    "@types/react": "^18.3.10",
+    "@types/react-dom": "^18.3.0",
+    "typescript": "^5.6.3"
+  }
+}

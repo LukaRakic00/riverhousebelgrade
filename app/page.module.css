@@ -1,0 +1,92 @@
+.container {
+	max-width: 1100px;
+	margin: 0 auto;
+	padding: 24px 16px;
+}
+.hero {
+	display: grid;
+	grid-template-columns: 1.2fr 1fr;
+	gap: 24px;
+	margin-bottom: 48px;
+}
+.hero-text h1 {
+	font-size: 44px;
+	line-height: 1.1;
+	margin: 8px 0 12px 0;
+}
+.about {
+	margin: 56px 0 24px 0;
+}
+.gallery .grid {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 16px;
+}
+.grid-item {
+	overflow: hidden;
+	border-radius: 10px;
+	border: 1px solid var(--border);
+}
+.grid-item img {
+	transition: transform .35s ease, box-shadow .35s ease;
+	will-change: transform;
+}
+.grid-item:hover img {
+	transform: scale(1.04);
+	box-shadow: 0 10px 30px rgba(0,0,0,.35);
+}
+.cta {
+	margin: 56px 0 96px 0;
+}
+
+/* Hero sa parallax pozadinom i tamnim overlay-om */
+.heroSection {
+	position: relative;
+	min-height: 80vh;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: #fff;
+}
+.heroBg {
+	position: absolute;
+	inset: 0;
+	background-size: cover;
+	background-position: center;
+	background-attachment: fixed; /* jednostavan parallax */
+	filter: brightness(.75);
+}
+.heroOverlay {
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.55));
+}
+.heroContent {
+	position: relative;
+	text-align: center;
+	padding: 24px;
+}
+
+/* Glassmorphism kutija za opis */
+.glassBox {
+	background: rgba(255,255,255,.08);
+	border: 1px solid rgba(255,255,255,.2);
+	backdrop-filter: blur(10px);
+	border-radius: 14px;
+	padding: 20px;
+	color: #e9ecef;
+}
+@media (max-width: 900px) {
+	.gallery .grid {
+		grid-template-columns: repeat(2, 1fr);
+	}
+	.hero {
+		grid-template-columns: 1fr;
+	}
+}
+@media (max-width: 600px) {
+	.gallery .grid {
+		grid-template-columns: 1fr;
+	}
+}
+
