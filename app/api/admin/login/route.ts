@@ -16,7 +16,16 @@ export async function POST(req: Request) {
 		if (!username || !password) return jsonError("Nedostaju kredencijali.", 400);
 		const secret = process.env.JWT_SECRET;
 		if (!secret) return jsonError("JWT_SECRET nije podešen.", 500);
-		await connectToDatabase();
+		
+		try {
+			await connectToDatabase();
+		} catch (dbError: any) {
+			console.error("Database connection error:", dbError?.message);
+			if (dbError?.message?.includes("whitelist") || dbError?.message?.includes("IP")) {
+				return jsonError("MongoDB Atlas: IP adresa nije na whitelist-u. Proverite MongoDB Atlas Network Access.", 500);
+			}
+			return jsonError("Greška pri povezivanju sa bazom podataka.", 500);
+		}
 
 		// Ako nema korisnika, a postoje default varijable, kreiraj prvog admina
 		let user = await AdminUser.findOne({ username });

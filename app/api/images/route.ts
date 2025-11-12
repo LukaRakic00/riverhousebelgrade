@@ -4,6 +4,18 @@ import { SiteConfig } from "../../../models/SiteConfig";
 
 export const runtime = "nodejs";
 
+// Handle CORS preflight requests
+export async function OPTIONS() {
+	return new NextResponse(null, {
+		status: 200,
+		headers: {
+			"Access-Control-Allow-Origin": "*",
+			"Access-Control-Allow-Methods": "GET, PUT, OPTIONS",
+			"Access-Control-Allow-Headers": "Content-Type",
+		},
+	});
+}
+
 function defaults() {
 	return {
 		heroImageUrl: "",
@@ -41,10 +53,25 @@ export async function GET() {
 		const heroImageUrl = heroOk
 			? config.heroImageUrl
 			: "https://res.cloudinary.com/demo/image/upload/w_1600,c_fill/sample.jpg";
-		return NextResponse.json({ heroImageUrl, logoUrl: config.logoUrl, galleryImageUrls });
-	} catch {
+		return NextResponse.json(
+			{ heroImageUrl, logoUrl: config.logoUrl, galleryImageUrls },
+			{
+				headers: {
+					"Access-Control-Allow-Origin": "*",
+					"Access-Control-Allow-Methods": "GET, PUT, OPTIONS",
+				},
+			}
+		);
+	} catch (error: any) {
+		console.error("Images API error:", error?.message || error);
+		// Fallback to defaults if database connection fails
 		const def = defaults();
-		return NextResponse.json(def);
+		return NextResponse.json(def, {
+			headers: {
+				"Access-Control-Allow-Origin": "*",
+				"Access-Control-Allow-Methods": "GET, PUT, OPTIONS",
+			},
+		});
 	}
 }
 
