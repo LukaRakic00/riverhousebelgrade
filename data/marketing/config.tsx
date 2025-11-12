@@ -29,7 +29,7 @@ const siteConfig = {
     ],
   },
   footer: {
-    copyright: <>© {new Date().getFullYear()} River House Belgrade. Sva prava zadržana.</>,
+    instagramUrl: 'https://instagram.com/riverhousebelgrade',
     links: [
       {
         href: 'mailto:info@riverhouse.rs',

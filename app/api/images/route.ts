@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 function defaults() {
 	return {
 		heroImageUrl: "",
-		logoUrl: "https://res.cloudinary.com/dvohrn0zf/image/upload/v1762778172/241_elpdmc.jpg",
+		logoUrl: "https://res.cloudinary.com/dvohrn0zf/image/upload/v1762935030/s25-removebg-preview_yquban.png",
 		galleryImageUrls: [],
 	};
 }

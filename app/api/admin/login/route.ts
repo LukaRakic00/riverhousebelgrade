@@ -36,14 +36,15 @@ export async function POST(req: Request) {
 		const res = NextResponse.json({ ok: true });
 		res.cookies.set("admin_token", token, {
 			httpOnly: true,
-			secure: true,
+			secure: process.env.NODE_ENV === "production",
 			sameSite: "lax",
 			path: "/",
 			maxAge: 60 * 60 * 24 * 7
 		});
 		return res;
-	} catch {
-		return jsonError("Greška na serveru.", 500);
+	} catch (error: any) {
+		console.error("Login error:", error);
+		return jsonError(error?.message || "Greška na serveru.", 500);
 	}
 }
 
