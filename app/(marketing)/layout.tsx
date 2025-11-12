@@ -4,13 +4,9 @@ import { MarketingLayout as TemplateLayout } from "#components/layout/marketing-
 
 export default function MarketingLayout({ children }: { children: ReactNode }) {
 	return (
-		<html lang="sr">
-			<body>
-				<Providers>
-					<TemplateLayout>{children}</TemplateLayout>
-				</Providers>
-			</body>
-		</html>
+		<Providers>
+			<TemplateLayout>{children}</TemplateLayout>
+		</Providers>
 	);
 }
 
