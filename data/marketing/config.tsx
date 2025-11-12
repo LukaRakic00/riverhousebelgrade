@@ -7,7 +7,7 @@ import { Logo } from './logo'
 const siteConfig = {
   logo: Logo,
   seo: {
-    title: 'River House Belgrade',
+    title: 'Belgrade River House',
     description: 'Vikendica na vodi — mir, komfor i pogled na reku.',
   },
   termsUrl: '#',
@@ -29,7 +29,7 @@ const siteConfig = {
     ],
   },
   footer: {
-    instagramUrl: 'https://instagram.com/riverhousebelgrade',
+    instagramUrl: 'https://www.instagram.com/kuca.na.dunavu?igsh=cHk2Nnhsa3AyZDg0',
     links: [
       {
         href: 'mailto:info@riverhouse.rs',

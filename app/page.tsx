@@ -32,7 +32,10 @@ import {
 	FiUsers,
 	FiHome,
 	FiStar,
+	FiZoomIn,
 } from "react-icons/fi";
+import { PhotoProvider, PhotoView } from "react-photo-view";
+import "react-photo-view/dist/react-photo-view.css";
 
 import * as React from "react";
 import { useEffect, useState } from "react";
@@ -173,9 +176,9 @@ const HeroSection: React.FC<{ heroUrl?: string }> = ({ heroUrl }) => {
 						mb={{ base: 4, md: 6 }}
 						px={{ base: 2, md: 0 }}
 					>
-						<AnimatedText delay={0.2}>River House</AnimatedText>
+						<AnimatedText delay={0.2}>Belgrade</AnimatedText>
 						<Br />
-						<AnimatedText delay={0.8}>Belgrade</AnimatedText>
+						<AnimatedText delay={0.8}>River House</AnimatedText>
 					</Heading>
 					<motion.div
 						initial={{ opacity: 0, y: 30 }}
@@ -321,7 +324,7 @@ const FeaturesSection = () => {
 							textAlign="center"
 							mb={{ base: 3, md: 4 }}
 						>
-							Zašto River House
+							Zašto Belgrade River House
 						</Text>
 						<Heading
 							as="h2"
@@ -393,6 +396,8 @@ const FeaturesSection = () => {
 };
 
 const GallerySection: React.FC<{ images: string[] }> = ({ images }) => {
+	if (!images || images.length === 0) return null;
+
 	return (
 		<Box id="galerija" py={{ base: 16, md: 32 }} bg="black">
 			<Container maxW="container.xl" px={{ base: 4, md: 8 }}>
@@ -425,53 +430,74 @@ const GallerySection: React.FC<{ images: string[] }> = ({ images }) => {
 							Uživaj u prirodi
 						</Heading>
 					</motion.div>
-					<SimpleGrid columns={{ base: 1, sm: 2, lg: 3 }} spacing={{ base: 3, md: 4 }} w="100%">
-						{images.slice(0, 6).map((src, i) => (
-							<motion.div
-								key={i}
-								initial={{ opacity: 0, scale: 0.9 }}
-								whileInView={{ opacity: 1, scale: 1 }}
-								viewport={{ once: true, margin: "-50px" }}
-								transition={{ duration: 0.4, delay: i * 0.08 }}
-							>
-								<Box
-									position="relative"
-									overflow="hidden"
-									borderRadius="none"
-									aspectRatio={4 / 3}
-									_active={{
-										transform: "scale(0.98)",
-									}}
-									_hover={{
-										transform: { base: "none", md: "scale(1.02)" },
-									}}
-									transition="transform 0.3s ease"
-									cursor="pointer"
-									sx={{ touchAction: "manipulation" }}
+					<PhotoProvider>
+						<SimpleGrid columns={{ base: 1, sm: 2, lg: 3 }} spacing={{ base: 3, md: 4 }} w="100%">
+							{images.map((src, i) => (
+								<motion.div
+									key={i}
+									initial={{ opacity: 0, scale: 0.9 }}
+									whileInView={{ opacity: 1, scale: 1 }}
+									viewport={{ once: true, margin: "-50px" }}
+									transition={{ duration: 0.4, delay: i * 0.08 }}
 								>
-									<SafeImage
-										src={src}
-										alt={`Gallery ${i + 1}`}
-										width={800}
-										height={600}
-										style={{
-											width: "100%",
-											height: "100%",
-											objectFit: "cover",
-										}}
-									/>
-									<Box
-										position="absolute"
-										inset="0"
-										bg="black"
-										opacity={0}
-										_hover={{ opacity: { base: 0, md: 0.2 } }}
-										transition="opacity 0.3s ease"
-									/>
-								</Box>
-							</motion.div>
-						))}
-					</SimpleGrid>
+									<PhotoView src={src}>
+										<Box
+											position="relative"
+											overflow="hidden"
+											borderRadius="none"
+											aspectRatio={4 / 3}
+											cursor="pointer"
+											transition="all 0.3s ease"
+											sx={{ touchAction: "manipulation" }}
+											_hover={{
+												transform: { base: "none", md: "scale(1.02)" },
+											}}
+											_active={{
+												transform: "scale(0.98)",
+											}}
+										>
+											<SafeImage
+												src={src}
+												alt={`Gallery ${i + 1}`}
+												width={800}
+												height={600}
+												style={{
+													width: "100%",
+													height: "100%",
+													objectFit: "cover",
+												}}
+											/>
+											<Box
+												position="absolute"
+												inset="0"
+												bg="black"
+												opacity={0}
+												_hover={{ opacity: { base: 0, md: 0.3 } }}
+												transition="opacity 0.3s ease"
+											/>
+											<Box
+												position="absolute"
+												top="50%"
+												left="50%"
+												transform="translate(-50%, -50%)"
+												opacity={0}
+												_hover={{ opacity: { base: 0, md: 1 } }}
+												transition="opacity 0.3s ease"
+												pointerEvents="none"
+											>
+												<Icon
+													as={FiZoomIn}
+													boxSize={8}
+													color="white"
+													filter="drop-shadow(0 2px 4px rgba(0,0,0,0.5))"
+												/>
+											</Box>
+										</Box>
+									</PhotoView>
+								</motion.div>
+							))}
+						</SimpleGrid>
+					</PhotoProvider>
 				</VStack>
 			</Container>
 		</Box>

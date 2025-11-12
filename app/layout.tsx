@@ -6,8 +6,8 @@ import { Providers } from "./(marketing)/providers";
 import { MarketingLayout as TemplateLayout } from "#components/layout/marketing-layout";
 
 export const metadata: Metadata = {
-	title: process.env.NEXT_PUBLIC_SITE_NAME || "River House Belgrade",
-	description: "River House Belgrade - zvanična prezentacija",
+	title: process.env.NEXT_PUBLIC_SITE_NAME || "Belgrade River House",
+	description: "Belgrade River House - zvanična prezentacija",
 	icons: {
 		icon: [
 			{ url: "/static/favicons/favicon-16x16.png", sizes: "16x16", type: "image/png" },

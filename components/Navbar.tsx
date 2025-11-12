@@ -12,12 +12,12 @@ export function Navbar() {
 				<Link href="/" className="navbar-brand d-flex align-items-center gap-2">
 					<Image
 						src="https://res.cloudinary.com/dvohrn0zf/image/upload/v1762935030/s25-removebg-preview_yquban.png"
-						alt="River House Belgrade"
+						alt="Belgrade River House"
 						width={40}
 						height={40}
 						priority
 					/>
-					<span className="d-none d-sm-inline">River House Belgrade</span>
+					<span className="d-none d-sm-inline">Belgrade River House</span>
 				</Link>
 				<button className="navbar-toggler" type="button" aria-label="Toggle navigation" onClick={() => setOpen(!open)}>
 					<span className="navbar-toggler-icon"></span>

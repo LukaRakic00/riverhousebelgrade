@@ -18,7 +18,7 @@ export async function POST(req: Request) {
 
 		// Email za admina (ti dobijaš obaveštenje)
 		await resend.emails.send({
-			from: "River House Belgrade <noreply@riverhouse.rs>",
+			from: "Belgrade River House <noreply@riverhouse.rs>",
 			to: adminEmail,
 			subject: `Nova rezervacija - ${fullName}`,
 			html: `
@@ -40,7 +40,7 @@ export async function POST(req: Request) {
 				<body>
 					<div class="container">
 						<div class="header">
-							<h1 style="margin: 0;">River House Belgrade</h1>
+							<h1 style="margin: 0;">Belgrade River House</h1>
 							<p style="margin: 10px 0 0 0; opacity: 0.9;">Nova rezervacija</p>
 						</div>
 						<div class="content">
@@ -73,9 +73,9 @@ export async function POST(req: Request) {
 
 		// Email za korisnika (potvrda)
 		await resend.emails.send({
-			from: "River House Belgrade <noreply@riverhouse.rs>",
+			from: "Belgrade River House <noreply@riverhouse.rs>",
 			to: email,
-			subject: "Hvala na interesovanju - River House Belgrade",
+			subject: "Hvala na interesovanju - Belgrade River House",
 			html: `
 				<!DOCTYPE html>
 				<html>
@@ -92,18 +92,18 @@ export async function POST(req: Request) {
 				<body>
 					<div class="container">
 						<div class="header">
-							<h1 style="margin: 0;">River House Belgrade</h1>
+							<h1 style="margin: 0;">Belgrade River House</h1>
 							<p style="margin: 10px 0 0 0; opacity: 0.9;">Raj na vodi</p>
 						</div>
 						<div class="content">
 							<p>Poštovani/na <strong>${fullName}</strong>,</p>
-							<p>Hvala vam što ste se zainteresovali za River House Belgrade!</p>
+							<p>Hvala vam što ste se zainteresovali za Belgrade River House!</p>
 							<p>Primili smo vašu poruku i javićemo vam se u najkraćem roku sa detaljima o dostupnosti i rezervaciji.</p>
 							<p>U međuvremenu, možete pogledati našu <a href="https://riverhouse.rs/#galerija" style="color: #000; text-decoration: underline;">galeriju</a> ili nas kontaktirati direktno.</p>
-							<p>Srdačan pozdrav,<br><strong>River House Belgrade</strong></p>
+							<p>Srdačan pozdrav,<br><strong>Belgrade River House</strong></p>
 						</div>
 						<div class="footer">
-							<p>© ${new Date().getFullYear()} River House Belgrade. Sva prava zadržana.</p>
+							<p>© ${new Date().getFullYear()} Belgrade River House. Sva prava zadržana.</p>
 						</div>
 					</div>
 				</body>

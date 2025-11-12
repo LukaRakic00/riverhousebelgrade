@@ -35,7 +35,7 @@ export const Footer: React.FC<FooterProps> = (props) => {
             <Box>
               <Image
                 src={logoUrl}
-                alt={siteConfig.seo?.title || 'River House Belgrade'}
+                alt={siteConfig.seo?.title || 'Belgrade River House'}
                 width={200}
                 height={100}
                 style={{ height: 'auto', maxHeight: '100px', width: 'auto' }}
@@ -104,7 +104,7 @@ export const Footer: React.FC<FooterProps> = (props) => {
           pt={6}
         >
           <Text fontSize="xs" color="gray.500" textAlign="center">
-            © {new Date().getFullYear()} River House Belgrade. Sva prava zadržana.
+            © {new Date().getFullYear()} Belgrade River House. Sva prava zadržana.
           </Text>
         </Flex>
       </Container>

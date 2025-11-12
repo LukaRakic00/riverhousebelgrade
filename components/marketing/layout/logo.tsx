@@ -17,7 +17,7 @@ export const Logo = ({ href = '/', onClick }: LogoProps) => {
   const logo = (
     <Image
       src={logoUrl}
-      alt={siteConfig.seo?.title || 'River House Belgrade'}
+      alt={siteConfig.seo?.title || 'Belgrade River House'}
       width={180}
       height={90}
       style={{ height: 'auto', maxHeight: '90px', width: 'auto' }}
