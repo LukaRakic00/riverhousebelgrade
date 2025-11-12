@@ -97,7 +97,7 @@ export default function AdminLoginPage() {
 									</Text>
 								</VStack>
 
-								<form onSubmit={onSubmit}>
+					<form onSubmit={onSubmit}>
 									<VStack spacing={4}>
 										<FormControl>
 											<FormLabel color="gray.700" _dark={{ color: "gray.300" }}>
@@ -178,16 +178,16 @@ export default function AdminLoginPage() {
 											Prijavi se
 										</Button>
 									</VStack>
-								</form>
+					</form>
 							</VStack>
-						</CardBody>
-					</Card>
+				</CardBody>
+			</Card>
 
 					<Text fontSize="xs" color="gray.500" textAlign="center">
 						© {new Date().getFullYear()} Belgrade River House. Sva prava zadržana.
 					</Text>
 				</VStack>
-			</Container>
+		</Container>
 		</Box>
 	);
 }

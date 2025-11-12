@@ -35,7 +35,7 @@ const Navigation: React.FC<NavigationProps> = ({ position = 'left' }) => {
 
   // Levo: samo "O nama"
   // Desno: "Galerija" i "Kontakt"
-  const leftLinks = siteConfig.header.links.filter(({ id }) => id === 'benefits')
+  const leftLinks = siteConfig.header.links.filter(({ id }) => id === 'o-nama')
   const rightLinks = siteConfig.header.links.filter(({ id }) => id === 'galerija' || id === 'kontakt')
   const linksToShow = position === 'left' ? leftLinks : rightLinks
 

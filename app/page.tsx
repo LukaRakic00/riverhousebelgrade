@@ -64,6 +64,7 @@ export default function HomePage() {
 		<Box bg="black" color="white">
 			<HeroSection heroUrl={config?.heroImageUrl || ""} />
 			<FeaturesSection />
+			<AboutSection />
 			<GallerySection images={config?.featuredImages || []} />
 			<GoogleReviewsSection />
 			<RegistrationSection />
@@ -278,31 +279,72 @@ const HeroSection: React.FC<{ heroUrl?: string }> = ({ heroUrl }) => {
 };
 
 const FeaturesSection = () => {
-	const features = [
+	const [currentSlide, setCurrentSlide] = useState(0);
+	const [isPaused, setIsPaused] = useState(false);
+
+	const slides = [
 		{
 			icon: FiMapPin,
-			title: "Lokacija",
-			description: "U srcu Beograda, na vodi. Savršeno za vikend odmor i posebne prilike.",
-			details: "Krovna terasa • Pogled na reku",
+			title: "Luksuzni mir uz reku",
+			description: "Smeštena na jedinstvenoj lokaciji uz obalu reke, samo nekoliko minuta od srca Beograda. Savršeno utočište za spoj modernog komfora, privatnosti i prelepog pogleda na grad.",
 		},
 		{
 			icon: FiHome,
-			title: "Komfor",
-			description: "Moderno opremljen prostor, idealan za 2–6 osoba.",
-			details: "Prostran dnevni boravak",
+			title: "Privatni bazen i relaksacija",
+			description: "Uživajte u luksuzu sopstvenog sezonskog bazena na otvorenom, opustite se u sauni ili hidromasažnoj kadi. Potpuni mir daleko od gradske vreve, a opet na dohvat centra.",
 		},
 		{
-			icon: FiWifi,
-			title: "Pogodnosti",
-			description: "Brzi Wi‑Fi, kompletna kuhinja, klima, terasa na vodi.",
-			details: "Wi‑Fi i pametna TV",
+			icon: FiUsers,
+			title: "Komforna vila",
+			description: "Dve kompletno uređene spavaće sobe, prostran dnevni boravak sa flat-screen TV-om, moderno opremljena kuhinja i trpezarija. Kompletna posteljina i peškiri vrhunskog kvaliteta.",
+		},
+		{
+			icon: FiStar,
+			title: "Privatnost i pogodnosti",
+			description: "Besplatan privatni parking za vaše vozilo. Klimatizovana vila pažljivo uređena kako bi pružila osećaj doma i ekskluzivnosti. Terasa sa panoramskim pogledom na Beograd i reku.",
+		},
+		{
+			icon: FiMapPin,
+			title: "Savršena lokacija",
+			description: "Trg republike 5,3 km • Hram Svetog Save 6,4 km • Aerodrom Nikola Tesla 19 km. Centar grada na nekoliko minuta vožnje, idealno za poslovni boravak, odmor ili proslavu posebnog trenutka.",
+		},
+		{
+			icon: FiStar,
+			title: "Iskustvo koje se pamti",
+			description: "Belgrade River House – mesto gde se luksuz, udobnost i pogled na reku spajaju u nezaboravno iskustvo. Gde se luksuz susreće sa spokojem, a Beograd pokazuje svoje najlepše lice.",
 		},
 	];
+
+	// Auto-slide na svakih 7 sekundi
+	useEffect(() => {
+		if (slides.length <= 1 || isPaused) return;
+		const interval = setInterval(() => {
+			setCurrentSlide((prev) => (prev + 1) % slides.length);
+		}, 7000);
+		return () => clearInterval(interval);
+	}, [slides.length, isPaused]);
+
+	const handleSlideChange = (newSlide: number) => {
+		if (newSlide < 0 || newSlide >= slides.length) return;
+		setIsPaused(true);
+		setCurrentSlide(newSlide);
+		setTimeout(() => setIsPaused(false), 7000);
+	};
+
+	const handlePrev = () => {
+		const newSlide = currentSlide === 0 ? slides.length - 1 : currentSlide - 1;
+		handleSlideChange(newSlide);
+	};
+
+	const handleNext = () => {
+		const newSlide = currentSlide === slides.length - 1 ? 0 : currentSlide + 1;
+		handleSlideChange(newSlide);
+	};
 
 	return (
 		<Box id="benefits" py={{ base: 16, md: 32 }} bg="black">
 			<Container maxW="container.xl" px={{ base: 4, md: 8 }}>
-				<VStack spacing={{ base: 12, md: 16 }}>
+				<VStack spacing={{ base: 8, md: 12 }}>
 					<motion.div
 						initial={{ opacity: 0, y: 30 }}
 						whileInView={{ opacity: 1, y: 0 }}
@@ -331,57 +373,551 @@ const FeaturesSection = () => {
 							Iskustvo koje se pamti
 						</Heading>
 					</motion.div>
-					<SimpleGrid columns={{ base: 1, md: 3 }} spacing={{ base: 6, md: 8 }} w="100%">
-						{features.map((feature, i) => (
-							<motion.div
-								key={i}
-								initial={{ opacity: 0, y: 30 }}
-								whileInView={{ opacity: 1, y: 0 }}
-								viewport={{ once: true }}
-								transition={{ duration: 0.6, delay: i * 0.15 }}
-							>
-								<Card
+
+					<Box
+						w="100%"
+						maxW="900px"
+						mx="auto"
+						position="relative"
+						onMouseEnter={() => setIsPaused(true)}
+						onMouseLeave={() => setIsPaused(false)}
+					>
+						{/* Navigation arrows */}
+						{slides.length > 1 && (
+							<>
+								<IconButton
+									aria-label="Prethodni slajd"
+									icon={<FiArrowRight style={{ transform: "rotate(180deg)" }} />}
+									position="absolute"
+									left={{ base: 2, md: -12 }}
+									top="50%"
+									transform="translateY(-50%)"
+									zIndex={3}
 									bg="gray.900"
+									color="yellow.400"
 									borderWidth="1px"
-									borderColor="gray.800"
-									borderRadius="none"
-									p={{ base: 6, md: 8 }}
-									h="100%"
-									_hover={{
-										borderColor: "gray.700",
-										transform: { base: "none", md: "translateY(-4px)" },
-									}}
-									transition="all 0.3s ease"
-								>
-									<VStack align="flex-start" spacing={{ base: 3, md: 4 }}>
-										<Box
-											w={{ base: "50px", md: "60px" }}
-											h={{ base: "50px", md: "60px" }}
-											bg="white"
-											color="black"
+									borderColor="yellow.400"
+									borderRadius="full"
+									_hover={{ bg: "yellow.400", color: "black" }}
+									onClick={handlePrev}
+									display={{ base: "none", md: "flex" }}
+								/>
+								<IconButton
+									aria-label="Sledeći slajd"
+									icon={<FiArrowRight />}
+									position="absolute"
+									right={{ base: 2, md: -12 }}
+									top="50%"
+									transform="translateY(-50%)"
+									zIndex={3}
+									bg="gray.900"
+									color="yellow.400"
+									borderWidth="1px"
+									borderColor="yellow.400"
+									borderRadius="full"
+									_hover={{ bg: "yellow.400", color: "black" }}
+									onClick={handleNext}
+									display={{ base: "none", md: "flex" }}
+								/>
+							</>
+						)}
+
+						<Box
+							overflow="hidden"
+							borderRadius="none"
+							position="relative"
+							w="100%"
+						>
+							<Flex
+								w={`${slides.length * 100}%`}
+								style={{
+									transform: `translateX(-${currentSlide * (100 / slides.length)}%)`,
+									transition: "transform 0.6s ease-in-out",
+									display: "flex",
+								}}
+							>
+								{slides.map((slide, idx) => (
+									<Box
+										key={idx}
+										w={`${100 / slides.length}%`}
+										flexShrink={0}
+										px={{ base: 2, md: 4 }}
+									>
+										<Card
+											bg="gray.900"
+											borderWidth="1px"
+											borderColor={currentSlide === idx ? "yellow.400" : "gray.800"}
 											borderRadius="none"
-											display="flex"
-											alignItems="center"
-											justifyContent="center"
-											mb={2}
+											p={{ base: 6, md: 10 }}
+											w="100%"
+											h="100%"
+											_hover={{
+												borderColor: "yellow.400",
+											}}
+											transition="all 0.3s ease"
 										>
-											<Icon as={feature.icon} fontSize={{ base: "xl", md: "2xl" }} />
-										</Box>
-										<Heading as="h3" fontSize={{ base: "lg", md: "xl" }} fontWeight="400" color="white">
-											{feature.title}
-										</Heading>
-										<Text color="gray.400" lineHeight="1.7" fontSize={{ base: "sm", md: "md" }}>
-											{feature.description}
-										</Text>
-										<HStack color="gray.500" fontSize={{ base: "xs", md: "sm" }} mt={2} flexWrap="wrap">
-											<Icon as={feature.icon} />
-											<Text>{feature.details}</Text>
-										</HStack>
-									</VStack>
-								</Card>
-							</motion.div>
+											<VStack spacing={{ base: 4, md: 6 }} align="center" textAlign="center">
+												<Box
+													w={{ base: "60px", md: "80px" }}
+													h={{ base: "60px", md: "80px" }}
+													bg="yellow.400"
+													color="black"
+													borderRadius="none"
+													display="flex"
+													alignItems="center"
+													justifyContent="center"
+													mb={2}
+												>
+													<Icon as={slide.icon} fontSize={{ base: "2xl", md: "3xl" }} />
+												</Box>
+												<Heading
+													as="h3"
+													fontSize={{ base: "xl", md: "2xl", lg: "3xl" }}
+													fontWeight="400"
+													color="white"
+													px={{ base: 2, md: 0 }}
+												>
+													{slide.title}
+												</Heading>
+												<Text
+													color="gray.300"
+													lineHeight={{ base: "1.7", md: "1.8" }}
+													fontSize={{ base: "sm", md: "md", lg: "lg" }}
+													maxW="700px"
+													px={{ base: 2, md: 0 }}
+												>
+													{slide.description}
+												</Text>
+											</VStack>
+										</Card>
+									</Box>
+								))}
+							</Flex>
+						</Box>
+
+						{/* Navigation dots */}
+						{slides.length > 1 && (
+							<HStack spacing={2} justify="center" mt={{ base: 6, md: 8 }}>
+								{slides.map((_, idx) => (
+									<Box
+										key={idx}
+										w={currentSlide === idx ? "32px" : "8px"}
+										h="8px"
+										bg={currentSlide === idx ? "yellow.400" : "gray.600"}
+										borderRadius="full"
+										cursor="pointer"
+										onClick={() => handleSlideChange(idx)}
+										transition="all 0.3s ease"
+										sx={{ touchAction: "manipulation" }}
+									/>
+								))}
+							</HStack>
+						)}
+					</Box>
+				</VStack>
+			</Container>
+		</Box>
+	);
+};
+
+const AboutSection = () => {
+	const [currentSlide, setCurrentSlide] = useState(0);
+	const [isPaused, setIsPaused] = useState(false);
+
+	const slides = [
+		{
+			title: "Belgrade River House – luksuzni mir uz reku",
+			content: (
+				<VStack spacing={{ base: 2, md: 4 }} align="stretch">
+					<Text fontSize={{ base: "xs", md: "sm", lg: "md" }} color="gray.300" lineHeight={{ base: "1.6", md: "1.7", lg: "1.8" }} textAlign="center">
+						Belgrade River House – luksuzni mir uz reku, samo nekoliko minuta od srca Beograda
+					</Text>
+					<Text fontSize={{ base: "xs", md: "sm", lg: "md" }} color="gray.300" lineHeight={{ base: "1.6", md: "1.7", lg: "1.8" }}>
+						Smeštena na jedinstvenoj lokaciji uz obalu reke, Belgrade River House predstavlja savršeno utočište za one koji traže spoj modernog komfora, privatnosti i prelepog pogleda na grad. Ova ekskluzivna vila nudi sve što je potrebno za potpunu relaksaciju – od privatnog bazena i uređenog dvorišta, do prostrane terase sa nezaboravnim panoramskim pogledom na Beograd i reku.
+					</Text>
+				</VStack>
+			),
+		},
+		{
+			title: "Privatni bazen i relaksacija",
+			content: (
+				<VStack spacing={{ base: 2, md: 4 }} align="stretch">
+					<Text fontSize={{ base: "xs", md: "sm", lg: "md" }} color="gray.300" lineHeight={{ base: "1.6", md: "1.7", lg: "1.8" }}>
+						Uživajte u luksuzu sopstvenog sezonskog bazena na otvorenom, opustite se u sauni ili hidromasažnoj kadi, i doživite potpuni mir daleko od gradske vreve, a opet na dohvat centra.
+					</Text>
+					<Text fontSize={{ base: "xs", md: "sm", lg: "md" }} color="gray.300" lineHeight={{ base: "1.6", md: "1.7", lg: "1.8" }}>
+						Skrivena od gradske vreve, a ipak nadomak centra Beograda, Belgrade River House predstavlja savršen spoj luksuza, udobnosti i prirode. Naša ekskluzivna vila nudi jedinstveno iskustvo boravka uz reku, idealno za opuštanje, romantični vikend, porodični odmor ili privatni retreat.
+					</Text>
+				</VStack>
+			),
+		},
+		{
+			title: "Komforna vila",
+			content: (
+				<VStack spacing={{ base: 2, md: 4 }} align="stretch">
+					<Text fontSize={{ base: "xs", md: "sm", lg: "md" }} color="gray.300" lineHeight={{ base: "1.6", md: "1.7", lg: "1.8" }} mb={{ base: 2, md: 3 }}>
+						Vila je klimatizovana i pažljivo uređena kako bi pružila osećaj doma i ekskluzivnosti. Gostima su na raspolaganju:
+					</Text>
+					<SimpleGrid columns={{ base: 1, md: 2 }} spacing={{ base: 2, md: 3, lg: 4 }} w="100%">
+						{[
+							"dve kompletno uređene spavaće sobe",
+							"prostran dnevni boravak sa flat-screen TV-om i satelitskim kanalima",
+							"moderno opremljena kuhinja sa frižiderom i trpezarijom",
+							"kompletna posteljina i peškiri",
+						].map((item, i) => (
+							<HStack key={i} align="flex-start" spacing={{ base: 2, md: 3 }}>
+								<Icon as={FiCheck} color="yellow.400" boxSize={{ base: 3.5, md: 4, lg: 5 }} mt={1} flexShrink={0} />
+								<Text fontSize={{ base: "xs", md: "sm", lg: "md" }} color="gray.300" lineHeight={{ base: "1.5", md: "1.6", lg: "1.7" }}>
+									{item}
+								</Text>
+							</HStack>
 						))}
 					</SimpleGrid>
+				</VStack>
+			),
+		},
+		{
+			title: "Parking i lokacija",
+			content: (
+				<VStack spacing={{ base: 2, md: 4 }} align="stretch">
+					<Text fontSize={{ base: "xs", md: "sm", lg: "md" }} color="gray.300" lineHeight={{ base: "1.6", md: "1.7", lg: "1.8" }}>
+						Za vaše vozilo obezbeđen je besplatan privatni parking, dok se centar grada nalazi svega nekoliko minuta vožnje – Trg republike udaljen je 5,3 km, a Hram Svetog Save 6,4 km. Aerodrom „Nikola Tesla" nalazi se na 19 km od objekta.
+					</Text>
+					<Box 
+						bg="gray.800" 
+						borderLeft={{ base: "2px solid", md: "3px solid" }}
+						borderColor="yellow.400" 
+						p={{ base: 2.5, md: 4, lg: 5 }} 
+						w="100%"
+						borderRadius={{ base: "none", md: "none" }}
+					>
+						<Text 
+							fontSize={{ base: "xs", md: "sm", lg: "md" }} 
+							color="white" 
+							fontWeight="300" 
+							lineHeight={{ base: "1.5", md: "1.6", lg: "1.7" }} 
+							fontStyle="italic"
+							px={{ base: 0, md: 0 }}
+						>
+							✨ Belgrade River House – mesto gde se luksuz, udobnost i pogled na reku spajaju u nezaboravno iskustvo.
+						</Text>
+					</Box>
+				</VStack>
+			),
+		},
+		{
+			title: "Savršena lokacija",
+			content: (
+				<VStack spacing={{ base: 2, md: 4 }} align="stretch">
+					<Heading as="h3" fontSize={{ base: "md", md: "lg", lg: "xl" }} fontWeight="400" color="white" mb={{ base: 2, md: 3 }}>
+						📍 Savršena lokacija
+					</Heading>
+					<VStack spacing={{ base: 1.5, md: 2 }} align="flex-start" pl={{ base: 0, md: 4 }}>
+						<HStack spacing={{ base: 2, md: 3 }} align="flex-start">
+							<Icon as={FiMapPin} color="yellow.400" boxSize={{ base: 3.5, md: 4, lg: 5 }} mt={1} flexShrink={0} />
+							<Text fontSize={{ base: "xs", md: "sm", lg: "md" }} color="gray.300" lineHeight={{ base: "1.5", md: "1.6", lg: "1.7" }}>
+								Trg republike je udaljen 5,3 km
+							</Text>
+						</HStack>
+						<HStack spacing={{ base: 2, md: 3 }} align="flex-start">
+							<Icon as={FiMapPin} color="yellow.400" boxSize={{ base: 3.5, md: 4, lg: 5 }} mt={1} flexShrink={0} />
+							<Text fontSize={{ base: "xs", md: "sm", lg: "md" }} color="gray.300" lineHeight={{ base: "1.5", md: "1.6", lg: "1.7" }}>
+								Hram Svetog Save je udaljen 6,4 km
+							</Text>
+						</HStack>
+						<HStack spacing={{ base: 2, md: 3 }} align="flex-start">
+							<Icon as={FiMapPin} color="yellow.400" boxSize={{ base: 3.5, md: 4, lg: 5 }} mt={1} flexShrink={0} />
+							<Text fontSize={{ base: "xs", md: "sm", lg: "md" }} color="gray.300" lineHeight={{ base: "1.5", md: "1.6", lg: "1.7" }}>
+								Aerodrom Nikola Tesla nalazi se na samo 19 km
+							</Text>
+						</HStack>
+					</VStack>
+				</VStack>
+			),
+		},
+		{
+			title: "Iskustvo koje se pamti",
+			content: (
+				<VStack spacing={{ base: 2, md: 4 }} align="stretch">
+					<Text fontSize={{ base: "xs", md: "sm", lg: "md" }} color="gray.300" lineHeight={{ base: "1.6", md: "1.7", lg: "1.8" }}>
+						Opustite se u privatnom bazenu, uživajte u sauni ili hidromasažnoj kadi, i dopustite da vas pogledi na reku i grad ispune mirom.
+					</Text>
+					<Text fontSize={{ base: "xs", md: "sm", lg: "md" }} color="gray.300" lineHeight={{ base: "1.6", md: "1.7", lg: "1.8" }} textAlign="center">
+						Bez obzira da li dolazite zbog posla, odmora ili proslave posebnog trenutka, Belgrade River House nudi mir, udobnost i privatnost na najvišem nivou.
+					</Text>
+					<Box 
+						bg="gray.800" 
+						borderLeft={{ base: "2px solid", md: "3px solid" }}
+						borderColor="yellow.400" 
+						p={{ base: 2.5, md: 4, lg: 5 }} 
+						w="100%" 
+						mt={{ base: 2, md: 2 }}
+						borderRadius={{ base: "none", md: "none" }}
+					>
+						<Text 
+							fontSize={{ base: "xs", md: "sm", lg: "md" }} 
+							color="white" 
+							fontWeight="300" 
+							lineHeight={{ base: "1.5", md: "1.6", lg: "1.7" }} 
+							textAlign="center"
+							px={{ base: 0, md: 0 }}
+						>
+							Belgrade River House – gde se luksuz susreće sa spokojem, a Beograd pokazuje svoje najlepše lice.
+						</Text>
+					</Box>
+				</VStack>
+			),
+		},
+	];
+
+	// Auto-slide na svakih 7 sekundi
+	useEffect(() => {
+		if (slides.length <= 1 || isPaused) return;
+		const interval = setInterval(() => {
+			setCurrentSlide((prev) => (prev + 1) % slides.length);
+		}, 7000);
+		return () => clearInterval(interval);
+	}, [slides.length, isPaused]);
+
+	const handleSlideChange = (newSlide: number) => {
+		if (newSlide < 0 || newSlide >= slides.length) return;
+		setIsPaused(true);
+		setCurrentSlide(newSlide);
+		setTimeout(() => setIsPaused(false), 7000);
+	};
+
+	const handlePrev = () => {
+		const newSlide = currentSlide === 0 ? slides.length - 1 : currentSlide - 1;
+		handleSlideChange(newSlide);
+	};
+
+	const handleNext = () => {
+		const newSlide = currentSlide === slides.length - 1 ? 0 : currentSlide + 1;
+		handleSlideChange(newSlide);
+	};
+
+	return (
+		<Box id="o-nama" py={{ base: 12, md: 20, lg: 24 }} bg="black">
+			<Container maxW="container.xl" px={{ base: 4, md: 6, lg: 8 }}>
+				<VStack spacing={{ base: 6, md: 8 }}>
+					<motion.div
+						initial={{ opacity: 0, y: 30 }}
+						whileInView={{ opacity: 1, y: 0 }}
+						viewport={{ once: true }}
+						transition={{ duration: 0.6 }}
+						style={{ width: "100%" }}
+					>
+						<Text
+							fontSize={{ base: "xs", md: "sm" }}
+							color="gray.500"
+							letterSpacing={{ base: "0.15em", md: "0.2em" }}
+							textTransform="uppercase"
+							textAlign="center"
+							mb={{ base: 3, md: 4 }}
+						>
+							O nama
+						</Text>
+						<Heading
+							as="h2"
+							fontSize={{ base: "3xl", sm: "4xl", md: "5xl", lg: "6xl" }}
+							fontWeight="300"
+							letterSpacing={{ base: "-0.01em", md: "-0.02em" }}
+							textAlign="center"
+							color="white"
+							px={{ base: 2, md: 0 }}
+							mb={{ base: 6, md: 8 }}
+						>
+							Luksuzni mir uz reku
+						</Heading>
+					</motion.div>
+
+					<Box
+						w="100%"
+						maxW="900px"
+						mx="auto"
+						position="relative"
+						onMouseEnter={() => setIsPaused(true)}
+						onMouseLeave={() => setIsPaused(false)}
+					>
+						{/* Navigation arrows */}
+						{slides.length > 1 && (
+							<>
+								<IconButton
+									aria-label="Prethodni slajd"
+									icon={<FiArrowRight style={{ transform: "rotate(180deg)" }} />}
+									position="absolute"
+									left={{ base: 2, md: -12 }}
+									top="50%"
+									transform="translateY(-50%)"
+									zIndex={3}
+									bg="gray.900"
+									color="yellow.400"
+									borderWidth="1px"
+									borderColor="yellow.400"
+									borderRadius="full"
+									_hover={{ bg: "yellow.400", color: "black" }}
+									onClick={handlePrev}
+									display={{ base: "none", md: "flex" }}
+								/>
+								<IconButton
+									aria-label="Sledeći slajd"
+									icon={<FiArrowRight />}
+									position="absolute"
+									right={{ base: 2, md: -12 }}
+									top="50%"
+									transform="translateY(-50%)"
+									zIndex={3}
+									bg="gray.900"
+									color="yellow.400"
+									borderWidth="1px"
+									borderColor="yellow.400"
+									borderRadius="full"
+									_hover={{ bg: "yellow.400", color: "black" }}
+									onClick={handleNext}
+									display={{ base: "none", md: "flex" }}
+								/>
+							</>
+						)}
+
+						{/* Mobile: Horizontal slider, Desktop: Fade in/out */}
+						{/* Mobile horizontal slider */}
+						<Box display={{ base: "block", md: "none" }} overflow="hidden" borderRadius="none" position="relative" w="100%">
+							<Flex
+								w={`${slides.length * 100}%`}
+								style={{
+									transform: `translateX(-${currentSlide * (100 / slides.length)}%)`,
+									transition: "transform 0.6s ease-in-out",
+									display: "flex",
+								}}
+							>
+								{slides.map((slide, idx) => (
+									<Box key={idx} w={`${100 / slides.length}%`} flexShrink={0} px={{ base: 2, md: 4 }}>
+										<Card
+											bg="gray.900"
+											borderWidth="1px"
+											borderColor={currentSlide === idx ? "yellow.400" : "gray.800"}
+											borderRadius="none"
+											p={{ base: 6, md: 10 }}
+											w="100%"
+											h="100%"
+											_hover={{
+												borderColor: "yellow.400",
+											}}
+											transition="all 0.3s ease"
+										>
+											<VStack spacing={{ base: 3, md: 6 }} align="stretch" h="100%" justify="flex-start">
+												<Heading
+													as="h3"
+													fontSize={{ base: "lg", md: "2xl", lg: "3xl" }}
+													fontWeight="400"
+													color="white"
+													textAlign="center"
+													mb={{ base: 3, md: 5 }}
+													px={{ base: 2, md: 0 }}
+												>
+													{slide.title}
+												</Heading>
+												{slide.content}
+											</VStack>
+										</Card>
+									</Box>
+								))}
+							</Flex>
+						</Box>
+
+						{/* Desktop fade in/out container */}
+						<Box display={{ base: "none", md: "block" }} position="relative" w="100%" h="350px">
+							{slides.map((slide, idx) => (
+								<motion.div
+									key={idx}
+									initial={false}
+									animate={{
+										opacity: currentSlide === idx ? 1 : 0,
+										scale: currentSlide === idx ? 1 : 0.96,
+										y: currentSlide === idx ? 0 : 15,
+									}}
+									transition={{
+										duration: 0.7,
+										ease: "easeInOut",
+									}}
+									style={{
+										position: "absolute",
+										top: 0,
+										left: 0,
+										right: 0,
+										width: "100%",
+										height: "100%",
+										pointerEvents: currentSlide === idx ? "auto" : "none",
+									}}
+								>
+									<Card
+										bg="gray.900"
+										borderWidth="1px"
+										borderColor={currentSlide === idx ? "yellow.400" : "gray.800"}
+										borderRadius="none"
+										p={8}
+										w="100%"
+										h="100%"
+										_hover={{
+											borderColor: "yellow.400",
+										}}
+										transition="all 0.3s ease"
+									>
+										<VStack spacing={5} align="stretch" h="100%" justify="flex-start">
+											<motion.div
+												initial={{ opacity: 0, y: 15 }}
+												animate={{
+													opacity: currentSlide === idx ? 1 : 0,
+													y: currentSlide === idx ? 0 : 15,
+												}}
+												transition={{ delay: 0.15, duration: 0.5 }}
+											>
+												<Heading
+													as="h3"
+													fontSize={{ base: "xl", md: "2xl", lg: "3xl" }}
+													fontWeight="400"
+													color="white"
+													textAlign="center"
+													mb={5}
+													px={0}
+												>
+													{slide.title}
+												</Heading>
+											</motion.div>
+											<motion.div
+												initial={{ opacity: 0 }}
+												animate={{
+													opacity: currentSlide === idx ? 1 : 0,
+												}}
+												transition={{ delay: 0.3, duration: 0.5 }}
+											>
+												{slide.content}
+											</motion.div>
+										</VStack>
+									</Card>
+								</motion.div>
+							))}
+						</Box>
+
+						{/* Navigation dots */}
+						{slides.length > 1 && (
+							<HStack spacing={2} justify="center" mt={{ base: 6, md: 8 }}>
+								{slides.map((_, idx) => (
+									<Box
+										key={idx}
+										w={currentSlide === idx ? "32px" : "8px"}
+										h="8px"
+										bg={currentSlide === idx ? "yellow.400" : "gray.600"}
+										borderRadius="full"
+										cursor="pointer"
+										onClick={() => handleSlideChange(idx)}
+										transition="all 0.3s ease"
+										sx={{ touchAction: "manipulation" }}
+									/>
+								))}
+							</HStack>
+						)}
+					</Box>
 				</VStack>
 			</Container>
 		</Box>
@@ -429,49 +965,49 @@ const GallerySection: React.FC<{ images: string[] }> = ({ images }) => {
 						</Box>
 					) : (
 						<PhotoProvider>
-							<SimpleGrid columns={{ base: 1, sm: 2, lg: 3 }} spacing={{ base: 3, md: 4 }} w="100%">
+					<SimpleGrid columns={{ base: 1, sm: 2, lg: 3 }} spacing={{ base: 3, md: 4 }} w="100%">
 								{images.map((src, i) => (
-									<motion.div
-										key={i}
-										initial={{ opacity: 0, scale: 0.9 }}
-										whileInView={{ opacity: 1, scale: 1 }}
-										viewport={{ once: true, margin: "-50px" }}
-										transition={{ duration: 0.4, delay: i * 0.08 }}
-									>
+							<motion.div
+								key={i}
+								initial={{ opacity: 0, scale: 0.9 }}
+								whileInView={{ opacity: 1, scale: 1 }}
+								viewport={{ once: true, margin: "-50px" }}
+								transition={{ duration: 0.4, delay: i * 0.08 }}
+							>
 										<PhotoView src={src}>
-											<Box
-												position="relative"
-												overflow="hidden"
-												borderRadius="none"
-												aspectRatio={4 / 3}
+								<Box
+									position="relative"
+									overflow="hidden"
+									borderRadius="none"
+									aspectRatio={4 / 3}
 												cursor="pointer"
 												transition="all 0.3s ease"
 												sx={{ touchAction: "manipulation" }}
-												_hover={{
-													transform: { base: "none", md: "scale(1.02)" },
-												}}
+									_hover={{
+										transform: { base: "none", md: "scale(1.02)" },
+									}}
 												_active={{
 													transform: "scale(0.98)",
 												}}
-											>
-												<SafeImage
-													src={src}
-													alt={`Gallery ${i + 1}`}
-													width={800}
-													height={600}
-													style={{
-														width: "100%",
-														height: "100%",
-														objectFit: "cover",
-													}}
-												/>
-												<Box
-													position="absolute"
-													inset="0"
-													bg="black"
-													opacity={0}
+								>
+									<SafeImage
+										src={src}
+										alt={`Gallery ${i + 1}`}
+										width={800}
+										height={600}
+										style={{
+											width: "100%",
+											height: "100%",
+											objectFit: "cover",
+										}}
+									/>
+									<Box
+										position="absolute"
+										inset="0"
+										bg="black"
+										opacity={0}
 													_hover={{ opacity: { base: 0, md: 0.3 } }}
-													transition="opacity 0.3s ease"
+										transition="opacity 0.3s ease"
 												/>
 												<Box
 													position="absolute"
@@ -488,13 +1024,13 @@ const GallerySection: React.FC<{ images: string[] }> = ({ images }) => {
 														boxSize={8}
 														color="white"
 														filter="drop-shadow(0 2px 4px rgba(0,0,0,0.5))"
-													/>
-												</Box>
+									/>
+								</Box>
 											</Box>
 										</PhotoView>
-									</motion.div>
-								))}
-							</SimpleGrid>
+							</motion.div>
+						))}
+					</SimpleGrid>
 						</PhotoProvider>
 					)}
 				</VStack>
@@ -527,8 +1063,6 @@ const GoogleReviewsSection: React.FC = () => {
 	const [uploadingImage, setUploadingImage] = useState(false);
 	const [imagePreview, setImagePreview] = useState<string | null>(null);
 	const [currentSlide, setCurrentSlide] = useState(0);
-	const [touchStart, setTouchStart] = useState(0);
-	const [touchEnd, setTouchEnd] = useState(0);
 	const [isPaused, setIsPaused] = useState(false);
 
 	useEffect(() => {
@@ -553,43 +1087,9 @@ const GoogleReviewsSection: React.FC = () => {
 		if (reviews.length <= 1 || isPaused) return;
 		const interval = setInterval(() => {
 			setCurrentSlide((prev) => (prev + 1) % reviews.length);
-		}, 3000); // 3 sekunde
+		}, 3000);
 		return () => clearInterval(interval);
 	}, [reviews.length, isPaused]);
-
-	// Swipe handlers
-	const handleTouchStart = (e: React.TouchEvent) => {
-		setTouchStart(e.targetTouches[0].clientX);
-		setTouchEnd(0);
-	};
-
-	const handleTouchMove = (e: React.TouchEvent) => {
-		setTouchEnd(e.targetTouches[0].clientX);
-	};
-
-	const handleTouchEnd = () => {
-		if (!touchStart || !touchEnd) {
-			setTouchStart(0);
-			setTouchEnd(0);
-			return;
-		}
-		const distance = touchStart - touchEnd;
-		const isLeftSwipe = distance > 50;
-		const isRightSwipe = distance < -50;
-
-		if (isLeftSwipe && reviews.length > 1) {
-			setIsPaused(true);
-			setCurrentSlide((prev) => (prev === reviews.length - 1 ? 0 : prev + 1));
-			setTimeout(() => setIsPaused(false), 3000);
-		}
-		if (isRightSwipe && reviews.length > 1) {
-			setIsPaused(true);
-			setCurrentSlide((prev) => (prev === 0 ? reviews.length - 1 : prev - 1));
-			setTimeout(() => setIsPaused(false), 3000);
-		}
-		setTouchStart(0);
-		setTouchEnd(0);
-	};
 
 	const handleSlideChange = (newSlide: number) => {
 		if (newSlide < 0 || newSlide >= reviews.length) return;
@@ -597,6 +1097,17 @@ const GoogleReviewsSection: React.FC = () => {
 		setCurrentSlide(newSlide);
 		setTimeout(() => setIsPaused(false), 3000);
 	};
+
+	const handlePrev = () => {
+		const newSlide = currentSlide === 0 ? reviews.length - 1 : currentSlide - 1;
+		handleSlideChange(newSlide);
+	};
+
+	const handleNext = () => {
+		const newSlide = currentSlide === reviews.length - 1 ? 0 : currentSlide + 1;
+		handleSlideChange(newSlide);
+	};
+
 
 
 	const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -936,9 +1447,7 @@ const GoogleReviewsSection: React.FC = () => {
 							maxW="900px" 
 							mx="auto" 
 							position="relative"
-							onTouchStart={handleTouchStart}
-							onTouchMove={handleTouchMove}
-							onTouchEnd={handleTouchEnd}
+							px={{ base: 0, md: 16 }}
 							onMouseEnter={() => setIsPaused(true)}
 							onMouseLeave={() => setIsPaused(false)}
 						>
@@ -949,34 +1458,34 @@ const GoogleReviewsSection: React.FC = () => {
 										aria-label="Prethodna recenzija"
 										icon={<FiArrowRight style={{ transform: "rotate(180deg)" }} />}
 										position="absolute"
-										left={{ base: 2, md: -12 }}
+										left={{ base: 2, md: 0 }}
 										top="50%"
 										transform="translateY(-50%)"
-										zIndex={2}
+										zIndex={3}
 										bg="gray.900"
 										color="yellow.400"
 										borderWidth="1px"
 										borderColor="yellow.400"
 										borderRadius="full"
 										_hover={{ bg: "yellow.400", color: "black" }}
-										onClick={() => handleSlideChange(currentSlide === 0 ? reviews.length - 1 : currentSlide - 1)}
+										onClick={handlePrev}
 										display={{ base: "none", md: "flex" }}
 									/>
 									<IconButton
 										aria-label="Sledeća recenzija"
 										icon={<FiArrowRight />}
 										position="absolute"
-										right={{ base: 2, md: -12 }}
+										right={{ base: 2, md: 0 }}
 										top="50%"
 										transform="translateY(-50%)"
-										zIndex={2}
+										zIndex={3}
 										bg="gray.900"
 										color="yellow.400"
 										borderWidth="1px"
 										borderColor="yellow.400"
 										borderRadius="full"
 										_hover={{ bg: "yellow.400", color: "black" }}
-										onClick={() => handleSlideChange(currentSlide === reviews.length - 1 ? 0 : currentSlide + 1)}
+										onClick={handleNext}
 										display={{ base: "none", md: "flex" }}
 									/>
 								</>
@@ -989,36 +1498,38 @@ const GoogleReviewsSection: React.FC = () => {
 								w="100%"
 							>
 								<Flex
-									transform={`translateX(-${currentSlide * 100}%)`}
-									transition="transform 0.5s ease-in-out"
 									w={`${reviews.length * 100}%`}
-									style={{ willChange: 'transform' }}
+									style={{
+										transform: `translateX(-${currentSlide * (100 / reviews.length)}%)`,
+										transition: "transform 0.5s ease-in-out",
+										display: "flex",
+									}}
 								>
 									{reviews.map((review) => (
 										<Box 
 											key={review._id} 
-											w="100%"
+											w={`${100 / reviews.length}%`}
 											flexShrink={0}
-											px={4}
+											px={{ base: 2, md: 4 }}
 										>
 											<Card
 												bg="gray.900"
 												borderWidth="1px"
 												borderColor="gray.800"
 												borderRadius="none"
-												p={6}
-												h="100%"
+												p={4}
+												w="100%"
 												_hover={{
 													borderColor: "yellow.400",
 												}}
 												transition="all 0.3s ease"
 											>
-												<VStack spacing={4} align="stretch" h="100%">
-													<HStack justify="flex-start" align="start" spacing={4} flexWrap="wrap">
+												<VStack spacing={3} align="stretch" w="100%">
+													<HStack justify="flex-start" align="start" spacing={3} flexWrap="wrap">
 														{review.imageUrl ? (
 															<Box
-																w="60px"
-																h="60px"
+																w="50px"
+																h="50px"
 																borderRadius="full"
 																overflow="hidden"
 																flexShrink={0}
@@ -1028,8 +1539,8 @@ const GoogleReviewsSection: React.FC = () => {
 																<SafeImage
 																	src={review.imageUrl}
 																	alt={review.authorName}
-																	width={60}
-																	height={60}
+																	width={50}
+																	height={50}
 																	style={{
 																		width: "100%",
 																		height: "100%",
@@ -1039,8 +1550,8 @@ const GoogleReviewsSection: React.FC = () => {
 															</Box>
 														) : (
 															<Box
-																w="60px"
-																h="60px"
+																w="50px"
+																h="50px"
 																borderRadius="full"
 																bg="yellow.400"
 																display="flex"
@@ -1048,14 +1559,14 @@ const GoogleReviewsSection: React.FC = () => {
 																justifyContent="center"
 																flexShrink={0}
 																fontWeight="bold"
-																fontSize="xl"
+																fontSize="lg"
 																color="black"
 															>
 																{review.authorName.charAt(0).toUpperCase()}
 															</Box>
 														)}
-														<VStack align="start" spacing={1} flex="1" minW="200px">
-															<Text fontWeight="600" color="white" fontSize="lg">
+														<VStack align="start" spacing={1} flex="1">
+															<Text fontWeight="600" color="white" fontSize="md">
 																{review.authorName}
 															</Text>
 															<HStack spacing={1}>
@@ -1064,15 +1575,23 @@ const GoogleReviewsSection: React.FC = () => {
 																		key={i}
 																		as={i < review.rating ? AiFillStar : AiOutlineStar}
 																		color={i < review.rating ? "yellow.400" : "gray.600"}
-																		boxSize={5}
+																		boxSize={4}
 																	/>
 																))}
 															</HStack>
 														</VStack>
 													</HStack>
-													<Text color="gray.300" fontSize="sm" lineHeight="1.7" fontStyle="italic" w="100%">
-														"{review.text}"
-													</Text>
+													<Box w="100%">
+														<Text 
+															color="gray.300" 
+															fontSize="sm" 
+															lineHeight="1.6" 
+															fontStyle="italic" 
+															wordBreak="break-word"
+														>
+															"{review.text}"
+														</Text>
+													</Box>
 													{review.createdAt && (
 														<Text color="gray.500" fontSize="xs">
 															{formatDate(review.createdAt)}

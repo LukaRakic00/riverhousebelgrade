@@ -115,12 +115,12 @@ export default function AdminPage() {
 	const saveConfig = async (next: SiteConfig) => {
 		setLoading(true);
 		try {
-			const res = await fetch("/api/images", {
-				method: "PUT",
+		const res = await fetch("/api/images", {
+			method: "PUT",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(next),
-			});
-			if (!res.ok) throw new Error("Nije moguće snimiti konfiguraciju.");
+			body: JSON.stringify(next),
+		});
+		if (!res.ok) throw new Error("Nije moguće snimiti konfiguraciju.");
 		const data = await res.json();
 		setConfig(data);
 		setHeroUrlEdit(data.heroImageUrl || "");
@@ -279,7 +279,7 @@ export default function AdminPage() {
 							>
 								Odjava
 							</Button>
-						</Flex>
+			</Flex>
 					</CardBody>
 				</Card>
 
@@ -302,7 +302,7 @@ export default function AdminPage() {
 							<AccordionIcon />
 						</AccordionButton>
 						<AccordionPanel pb={6} px={6}>
-						<Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={6} alignItems="start">
+					<Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={6} alignItems="start">
 							<Box
 								borderWidth="2px"
 								borderStyle="dashed"
@@ -316,7 +316,7 @@ export default function AdminPage() {
 								bg="gray.50"
 								_dark={{ borderColor: "gray.600", bg: "gray.800" }}
 							>
-								{heroUrlEdit ? (
+							{heroUrlEdit ? (
 									<SafeImage
 										src={heroUrlEdit}
 										alt="Hero"
@@ -324,13 +324,13 @@ export default function AdminPage() {
 										height={800}
 										style={{ width: "100%", height: "auto", maxHeight: "400px", objectFit: "contain" }}
 									/>
-								) : (
+							) : (
 									<VStack color="gray.400">
 										<Icon as={FiImage} boxSize={12} />
 										<Text>Nema postavljene hero slike</Text>
 									</VStack>
-								)}
-							</Box>
+							)}
+						</Box>
 							<Stack spacing={4}>
 								<InputGroup>
 									<InputLeftElement pointerEvents="none">
@@ -352,9 +352,9 @@ export default function AdminPage() {
 									w="100%"
 								>
 									Sačuvaj Hero URL
-								</Button>
-							</Stack>
-						</Grid>
+							</Button>
+						</Stack>
+					</Grid>
 						</AccordionPanel>
 					</AccordionItem>
 
@@ -512,7 +512,7 @@ export default function AdminPage() {
 													>
 														Poništi
 													</Button>
-												</HStack>
+						</HStack>
 											)}
 										</VStack>
 									</AlertDescription>
@@ -520,7 +520,7 @@ export default function AdminPage() {
 							)}
 
 							{/* Cloudinary Images Grid */}
-							{cloudLoading ? (
+						{cloudLoading ? (
 								<Flex justify="center" py={12}>
 									<Spinner size="xl" color="blue.500" />
 								</Flex>
@@ -652,7 +652,7 @@ export default function AdminPage() {
 										>
 											<Box position="absolute" top="2" left="2" zIndex={2}>
 												<Badge colorScheme="orange">{idx + 1}</Badge>
-											</Box>
+										</Box>
 											<SafeImage
 												src={u}
 												alt={`Featured ${idx + 1}`}
@@ -672,9 +672,9 @@ export default function AdminPage() {
 												Ukloni
 											</Button>
 										</Box>
-									))}
-								</SimpleGrid>
-							)}
+								))}
+							</SimpleGrid>
+						)}
 
 							<Divider />
 
@@ -727,7 +727,7 @@ export default function AdminPage() {
 							>
 								Sačuvaj udarne slike
 							</Button>
-						</Stack>
+					</Stack>
 						</AccordionPanel>
 					</AccordionItem>
 
@@ -901,7 +901,7 @@ export default function AdminPage() {
 										</VStack>
 									)}
 								</VStack>
-							</Card>
+			</Card>
 
 							<Divider />
 
@@ -988,8 +988,8 @@ export default function AdminPage() {
 																<Box key={idx} position="relative">
 																	<SafeImage src={url} alt={`${category.name} ${idx}`} width={200} height={150} style={{ width: "100%", height: "auto" }} />
 																</Box>
-															))}
-														</SimpleGrid>
+						))}
+						</SimpleGrid>
 													) : (
 														<Box textAlign="center" py={4} color="gray.500">
 															<Text fontSize="sm">Nema slika u ovoj kategoriji</Text>
@@ -1127,7 +1127,7 @@ export default function AdminPage() {
 																			const newImages = [...categoryImages];
 																			[newImages[idx], newImages[idx + 1]] = [newImages[idx + 1], newImages[idx]];
 																			setCategoryImages(newImages);
-																		}
+									}
 																	}}
 																/>
 															</VStack>
@@ -1156,7 +1156,7 @@ export default function AdminPage() {
 					</AccordionItem>
 				</Accordion>
 
-			</Container>
+		</Container>
 		</Box>
 	);
 }

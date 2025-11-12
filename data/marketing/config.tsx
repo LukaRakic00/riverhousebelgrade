@@ -15,7 +15,7 @@ const siteConfig = {
   header: {
     links: [
       {
-        id: 'benefits',
+        id: 'o-nama',
         label: 'O nama',
       },
       {
