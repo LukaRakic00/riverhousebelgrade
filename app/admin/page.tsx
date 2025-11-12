@@ -40,7 +40,7 @@ import {
 	AccordionPanel,
 	AccordionIcon,
 } from "@chakra-ui/react";
-import { FiLogOut, FiRefreshCw, FiSave, FiTrash, FiUpload, FiImage, FiCheck, FiX, FiFolder, FiPlus, FiEdit2 } from "react-icons/fi";
+import { FiLogOut, FiRefreshCw, FiSave, FiTrash, FiUpload, FiImage, FiCheck, FiX, FiFolder, FiPlus, FiEdit2, FiArrowUp, FiArrowDown } from "react-icons/fi";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -789,20 +789,29 @@ export default function AdminPage() {
 														method: "POST",
 														headers: { "Content-Type": "application/json" },
 														body: JSON.stringify({
-															name: newCategoryName,
-															description: newCategoryDesc,
-															imageUrls: categoryImages,
+															name: newCategoryName.trim(),
+															description: newCategoryDesc.trim() || undefined,
+															imageUrls: categoryImages || [],
 															order: categories.length,
 														}),
 													});
-													if (!res.ok) throw new Error("Greška pri kreiranju kategorije");
+													if (!res.ok) {
+														const errorData = await res.json().catch(() => ({}));
+														throw new Error(errorData.error || "Greška pri kreiranju kategorije");
+													}
+													const created = await res.json();
 													setNewCategoryName("");
 													setNewCategoryDesc("");
 													setCategoryImages([]);
 													loadCategories();
-													toast({ title: "Uspešno", description: "Kategorija je kreirana", status: "success" });
+													toast({ 
+														title: "Uspešno", 
+														description: `Kategorija "${created.name}" je kreirana sa ${created.imageUrls?.length || 0} slika`, 
+														status: "success" 
+													});
 												} catch (e: any) {
-													toast({ title: "Greška", description: e?.message, status: "error" });
+													console.error("Create category error:", e);
+													toast({ title: "Greška", description: e?.message || "Greška pri kreiranju kategorije", status: "error" });
 												}
 											}}
 											borderRadius="md"
@@ -827,23 +836,69 @@ export default function AdminPage() {
 										</Button>
 									</HStack>
 									{categoryImages.length > 0 && (
-										<SimpleGrid columns={{ base: 2, md: 4 }} spacing={2}>
-											{categoryImages.map((url, idx) => (
-												<Box key={idx} position="relative">
-													<SafeImage src={url} alt={`Cat ${idx}`} width={200} height={150} style={{ width: "100%", height: "auto" }} />
-													<IconButton
-														aria-label="Ukloni"
-														icon={<FiX />}
-														size="xs"
-														colorScheme="red"
-														position="absolute"
-														top="2"
-														right="2"
-														onClick={() => setCategoryImages((prev) => prev.filter((_, i) => i !== idx))}
-													/>
-												</Box>
-											))}
-										</SimpleGrid>
+										<VStack spacing={2} align="stretch">
+											<Text fontSize="sm" color="gray.600" _dark={{ color: "gray.400" }} fontWeight="semibold">
+												Slike u kategoriji ({categoryImages.length}):
+											</Text>
+											<SimpleGrid columns={{ base: 2, md: 4 }} spacing={2}>
+												{categoryImages.map((url, idx) => (
+													<Box key={`${url}-${idx}`} position="relative">
+														<SafeImage src={url} alt={`Cat ${idx}`} width={200} height={150} style={{ width: "100%", height: "auto" }} />
+														<VStack
+															position="absolute"
+															top="2"
+															left="2"
+															spacing={1}
+														>
+															<IconButton
+																aria-label="Pomeri gore"
+																icon={<FiArrowUp />}
+																size="xs"
+																colorScheme="blue"
+																bg="whiteAlpha.900"
+																_dark={{ bg: "gray.800" }}
+																isDisabled={idx === 0}
+																onClick={() => {
+																	if (idx > 0) {
+																		const newImages = [...categoryImages];
+																		[newImages[idx - 1], newImages[idx]] = [newImages[idx], newImages[idx - 1]];
+																		setCategoryImages(newImages);
+																	}
+																}}
+															/>
+															<IconButton
+																aria-label="Pomeri dole"
+																icon={<FiArrowDown />}
+																size="xs"
+																colorScheme="blue"
+																bg="whiteAlpha.900"
+																_dark={{ bg: "gray.800" }}
+																isDisabled={idx === categoryImages.length - 1}
+																onClick={() => {
+																	if (idx < categoryImages.length - 1) {
+																		const newImages = [...categoryImages];
+																		[newImages[idx], newImages[idx + 1]] = [newImages[idx + 1], newImages[idx]];
+																		setCategoryImages(newImages);
+																	}
+																}}
+															/>
+														</VStack>
+														<IconButton
+															aria-label="Ukloni"
+															icon={<FiX />}
+															size="xs"
+															colorScheme="red"
+															position="absolute"
+															top="2"
+															right="2"
+															bg="whiteAlpha.900"
+															_dark={{ bg: "gray.800" }}
+															onClick={() => setCategoryImages((prev) => prev.filter((_, i) => i !== idx))}
+														/>
+													</Box>
+												))}
+											</SimpleGrid>
+										</VStack>
 									)}
 								</VStack>
 							</Card>
@@ -1010,23 +1065,69 @@ export default function AdminPage() {
 											</Button>
 										</HStack>
 										{categoryImages.length > 0 && (
-											<SimpleGrid columns={{ base: 2, md: 4 }} spacing={2}>
-												{categoryImages.map((url, idx) => (
-													<Box key={idx} position="relative">
-														<SafeImage src={url} alt={`Edit ${idx}`} width={200} height={150} style={{ width: "100%", height: "auto" }} />
-														<IconButton
-															aria-label="Ukloni"
-															icon={<FiX />}
-															size="xs"
-															colorScheme="red"
-															position="absolute"
-															top="2"
-															right="2"
-															onClick={() => setCategoryImages((prev) => prev.filter((_, i) => i !== idx))}
-														/>
-													</Box>
-												))}
-											</SimpleGrid>
+											<VStack spacing={2} align="stretch">
+												<Text fontSize="sm" color="gray.600" _dark={{ color: "gray.400" }} fontWeight="semibold">
+													Slike u kategoriji ({categoryImages.length}):
+												</Text>
+												<SimpleGrid columns={{ base: 2, md: 4 }} spacing={2}>
+													{categoryImages.map((url, idx) => (
+														<Box key={`${url}-${idx}`} position="relative">
+															<SafeImage src={url} alt={`Edit ${idx}`} width={200} height={150} style={{ width: "100%", height: "auto" }} />
+															<VStack
+																position="absolute"
+																top="2"
+																left="2"
+																spacing={1}
+															>
+																<IconButton
+																	aria-label="Pomeri gore"
+																	icon={<FiArrowUp />}
+																	size="xs"
+																	colorScheme="blue"
+																	bg="whiteAlpha.900"
+																	_dark={{ bg: "gray.800" }}
+																	isDisabled={idx === 0}
+																	onClick={() => {
+																		if (idx > 0) {
+																			const newImages = [...categoryImages];
+																			[newImages[idx - 1], newImages[idx]] = [newImages[idx], newImages[idx - 1]];
+																			setCategoryImages(newImages);
+																		}
+																	}}
+																/>
+																<IconButton
+																	aria-label="Pomeri dole"
+																	icon={<FiArrowDown />}
+																	size="xs"
+																	colorScheme="blue"
+																	bg="whiteAlpha.900"
+																	_dark={{ bg: "gray.800" }}
+																	isDisabled={idx === categoryImages.length - 1}
+																	onClick={() => {
+																		if (idx < categoryImages.length - 1) {
+																			const newImages = [...categoryImages];
+																			[newImages[idx], newImages[idx + 1]] = [newImages[idx + 1], newImages[idx]];
+																			setCategoryImages(newImages);
+																		}
+																	}}
+																/>
+															</VStack>
+															<IconButton
+																aria-label="Ukloni"
+																icon={<FiX />}
+																size="xs"
+																colorScheme="red"
+																position="absolute"
+																top="2"
+																right="2"
+																bg="whiteAlpha.900"
+																_dark={{ bg: "gray.800" }}
+																onClick={() => setCategoryImages((prev) => prev.filter((_, i) => i !== idx))}
+															/>
+														</Box>
+													))}
+												</SimpleGrid>
+											</VStack>
 										)}
 									</VStack>
 								</Card>
