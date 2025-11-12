@@ -19,6 +19,13 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# python
+.venv
+venv
+__pycache__/
+*.py[cod]
+*$py.class
+
 # misc
 .DS_Store
 Thumbs.db
