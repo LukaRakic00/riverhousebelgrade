@@ -560,6 +560,7 @@ const GoogleReviewsSection: React.FC = () => {
 	// Swipe handlers
 	const handleTouchStart = (e: React.TouchEvent) => {
 		setTouchStart(e.targetTouches[0].clientX);
+		setTouchEnd(0);
 	};
 
 	const handleTouchMove = (e: React.TouchEvent) => {
@@ -567,27 +568,34 @@ const GoogleReviewsSection: React.FC = () => {
 	};
 
 	const handleTouchEnd = () => {
-		if (!touchStart || !touchEnd) return;
+		if (!touchStart || !touchEnd) {
+			setTouchStart(0);
+			setTouchEnd(0);
+			return;
+		}
 		const distance = touchStart - touchEnd;
 		const isLeftSwipe = distance > 50;
 		const isRightSwipe = distance < -50;
 
-		if (isLeftSwipe) {
+		if (isLeftSwipe && reviews.length > 1) {
 			setIsPaused(true);
 			setCurrentSlide((prev) => (prev === reviews.length - 1 ? 0 : prev + 1));
-			setTimeout(() => setIsPaused(false), 10000); // Resume after 10 seconds
+			setTimeout(() => setIsPaused(false), 5000);
 		}
-		if (isRightSwipe) {
+		if (isRightSwipe && reviews.length > 1) {
 			setIsPaused(true);
 			setCurrentSlide((prev) => (prev === 0 ? reviews.length - 1 : prev - 1));
-			setTimeout(() => setIsPaused(false), 10000); // Resume after 10 seconds
+			setTimeout(() => setIsPaused(false), 5000);
 		}
+		setTouchStart(0);
+		setTouchEnd(0);
 	};
 
 	const handleSlideChange = (newSlide: number) => {
+		if (newSlide < 0 || newSlide >= reviews.length) return;
 		setIsPaused(true);
 		setCurrentSlide(newSlide);
-		setTimeout(() => setIsPaused(false), 10000); // Resume after 10 seconds
+		setTimeout(() => setIsPaused(false), 5000);
 	};
 
 	const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -930,6 +938,8 @@ const GoogleReviewsSection: React.FC = () => {
 							onTouchStart={handleTouchStart}
 							onTouchMove={handleTouchMove}
 							onTouchEnd={handleTouchEnd}
+							onMouseEnter={() => setIsPaused(true)}
+							onMouseLeave={() => setIsPaused(false)}
 						>
 							{/* Navigation arrows */}
 							{reviews.length > 1 && (
@@ -971,14 +981,25 @@ const GoogleReviewsSection: React.FC = () => {
 								</>
 							)}
 							
-							<Box overflow="hidden" borderRadius="none">
+							<Box 
+								overflow="hidden" 
+								borderRadius="none"
+								position="relative"
+								w="100%"
+							>
 								<Flex
 									transform={`translateX(-${currentSlide * 100}%)`}
 									transition="transform 0.5s ease-in-out"
 									w={`${reviews.length * 100}%`}
+									style={{ willChange: 'transform' }}
 								>
 									{reviews.map((review) => (
-										<Box key={review._id} w={`${100 / reviews.length}%`} px={4} flexShrink={0}>
+										<Box 
+											key={review._id} 
+											w="100%"
+											flexShrink={0}
+											px={4}
+										>
 											<Card
 												bg="gray.900"
 												borderWidth="1px"

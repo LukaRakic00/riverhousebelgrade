@@ -917,21 +917,36 @@ export default function AdminPage() {
 									<Text fontSize="sm" mt={2}>Kreirajte novu kategoriju gore</Text>
 								</Box>
 							) : (
-								<VStack spacing={6} align="stretch">
+								<Accordion allowMultiple defaultIndex={[]}>
 									{categories.map((category) => (
-										<Card key={category._id} variant="outline" p={4}>
-											<VStack spacing={4} align="stretch">
-												<Flex justify="space-between" align="start" flexWrap="wrap" gap={4}>
-													<VStack align="start" spacing={1}>
-														<Heading size="sm">{category.name}</Heading>
-														{category.description && (
-															<Text fontSize="sm" color="gray.600" _dark={{ color: "gray.400" }}>
-																{category.description}
-															</Text>
-														)}
-														<Badge colorScheme="teal">{category.imageUrls.length} slika</Badge>
-													</VStack>
-													<HStack>
+										<AccordionItem key={category._id} mb={4} borderWidth="1px" borderColor="gray.200" _dark={{ borderColor: "gray.700" }} borderRadius="md" overflow="hidden">
+											<AccordionButton
+												bg="gray.50"
+												_dark={{ bg: "gray.800" }}
+												py={4}
+												px={4}
+												_hover={{ bg: "gray.100", _dark: { bg: "gray.700" } }}
+											>
+												<Box flex="1" textAlign="left">
+													<Flex justify="space-between" align="center" flexWrap="wrap" gap={4} w="100%">
+														<VStack align="start" spacing={1}>
+															<Heading size="sm" color="gray.800" _dark={{ color: "white" }}>
+																{category.name}
+															</Heading>
+															{category.description && (
+																<Text fontSize="sm" color="gray.600" _dark={{ color: "gray.400" }}>
+																	{category.description}
+																</Text>
+															)}
+															<Badge colorScheme="teal">{category.imageUrls.length} slika</Badge>
+														</VStack>
+													</Flex>
+												</Box>
+												<AccordionIcon />
+											</AccordionButton>
+											<AccordionPanel pb={4} px={4}>
+												<VStack spacing={4} align="stretch">
+													<HStack justify="flex-end">
 														<Button
 															size="sm"
 															variant="outline"
@@ -967,20 +982,24 @@ export default function AdminPage() {
 															Obriši
 														</Button>
 													</HStack>
-												</Flex>
-												{category.imageUrls.length > 0 && (
-													<SimpleGrid columns={{ base: 2, md: 4 }} spacing={2}>
-														{category.imageUrls.map((url, idx) => (
-															<Box key={idx} position="relative">
-																<SafeImage src={url} alt={`${category.name} ${idx}`} width={200} height={150} style={{ width: "100%", height: "auto" }} />
-															</Box>
-														))}
-													</SimpleGrid>
-												)}
-											</VStack>
-										</Card>
+													{category.imageUrls.length > 0 ? (
+														<SimpleGrid columns={{ base: 2, md: 4 }} spacing={2}>
+															{category.imageUrls.map((url, idx) => (
+																<Box key={idx} position="relative">
+																	<SafeImage src={url} alt={`${category.name} ${idx}`} width={200} height={150} style={{ width: "100%", height: "auto" }} />
+																</Box>
+															))}
+														</SimpleGrid>
+													) : (
+														<Box textAlign="center" py={4} color="gray.500">
+															<Text fontSize="sm">Nema slika u ovoj kategoriji</Text>
+														</Box>
+													)}
+												</VStack>
+											</AccordionPanel>
+										</AccordionItem>
 									))}
-								</VStack>
+								</Accordion>
 							)}
 
 							{/* Edit Modal */}
