@@ -3,7 +3,7 @@ import { Schema, models, model } from "mongoose";
 export interface ISiteConfig {
 	heroImageUrl: string;
 	logoUrl?: string;
-	galleryImageUrls: string[];
+	featuredImages: string[]; // 6 udarnih slika za landing page
 	updatedAt?: Date;
 	createdAt?: Date;
 }
@@ -12,7 +12,7 @@ const SiteConfigSchema = new Schema<ISiteConfig>(
 	{
 		heroImageUrl: { type: String, required: true },
 		logoUrl: { type: String, required: false },
-		galleryImageUrls: { type: [String], required: true, default: [] }
+		featuredImages: { type: [String], required: true, default: [] }
 	},
 	{ timestamps: true }
 );

@@ -24,7 +24,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
 	return (
-		<html lang="sr">
+		<html lang="sr" suppressHydrationWarning>
 			<body>
 				<Script
 					id="chakra-color-mode"

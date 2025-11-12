@@ -12,6 +12,7 @@ import {
 	HStack,
 	Heading,
 	Icon,
+	IconButton,
 	SimpleGrid,
 	Stack,
 	Text,
@@ -20,6 +21,7 @@ import {
 	CardBody,
 	CardHeader,
 	Input,
+	Spinner,
 	useColorModeValue,
 } from "@chakra-ui/react";
 import { Br } from "@saas-ui/react";
@@ -33,7 +35,10 @@ import {
 	FiHome,
 	FiStar,
 	FiZoomIn,
+	FiUpload,
+	FiX,
 } from "react-icons/fi";
+import { AiFillStar, AiOutlineStar } from "react-icons/ai";
 import { PhotoProvider, PhotoView } from "react-photo-view";
 import "react-photo-view/dist/react-photo-view.css";
 
@@ -45,34 +50,22 @@ import { Faq } from "#components/faq";
 import faq from "#data/faq";
 import { SafeImage } from "../components/SafeImage";
 
-type SiteConfig = { heroImageUrl: string; galleryImageUrls: string[] };
+type SiteConfig = { heroImageUrl: string; featuredImages: string[] };
 
 export default function HomePage() {
 	const [config, setConfig] = useState<SiteConfig | null>(null);
-	const [heroIdx, setHeroIdx] = useState(0);
 	useEffect(() => {
 		fetch("/api/images", { cache: "no-store" })
 			.then((r) => r.json())
 			.then((d) => setConfig(d))
 			.catch(() => setConfig(null));
 	}, []);
-	const heroImages = React.useMemo(() => {
-		const arr = [...(config?.galleryImageUrls || [])];
-		if (config?.heroImageUrl) arr.unshift(config.heroImageUrl);
-		return arr.filter(Boolean);
-	}, [config]);
-	useEffect(() => {
-		if (!heroImages.length) return;
-		const id = setInterval(() => {
-			setHeroIdx((i) => (i + 1) % heroImages.length);
-		}, 5000);
-		return () => clearInterval(id);
-	}, [heroImages.length]);
 	return (
 		<Box bg="black" color="white">
-			<HeroSection heroUrl={heroImages[heroIdx]} />
+			<HeroSection heroUrl={config?.heroImageUrl || ""} />
 			<FeaturesSection />
-			<GallerySection images={config?.galleryImageUrls || []} />
+			<GallerySection images={config?.featuredImages || []} />
+			<GoogleReviewsSection />
 			<RegistrationSection />
 			<FaqSection />
 		</Box>
@@ -207,7 +200,7 @@ const HeroSection: React.FC<{ heroUrl?: string }> = ({ heroUrl }) => {
 						<VStack spacing={{ base: 4, md: 6 }} w="100%">
 							<ButtonLink
 								size="lg"
-								href="#galerija"
+								href="/galerija"
 								w="100%"
 								px={{ base: 8, md: 10 }}
 								py={{ base: 6, md: 8 }}
@@ -396,8 +389,6 @@ const FeaturesSection = () => {
 };
 
 const GallerySection: React.FC<{ images: string[] }> = ({ images }) => {
-	if (!images || images.length === 0) return null;
-
 	return (
 		<Box id="galerija" py={{ base: 16, md: 32 }} bg="black">
 			<Container maxW="container.xl" px={{ base: 4, md: 8 }}>
@@ -430,74 +421,667 @@ const GallerySection: React.FC<{ images: string[] }> = ({ images }) => {
 							Uživaj u prirodi
 						</Heading>
 					</motion.div>
-					<PhotoProvider>
-						<SimpleGrid columns={{ base: 1, sm: 2, lg: 3 }} spacing={{ base: 3, md: 4 }} w="100%">
-							{images.map((src, i) => (
-								<motion.div
-									key={i}
-									initial={{ opacity: 0, scale: 0.9 }}
-									whileInView={{ opacity: 1, scale: 1 }}
-									viewport={{ once: true, margin: "-50px" }}
-									transition={{ duration: 0.4, delay: i * 0.08 }}
-								>
-									<PhotoView src={src}>
-										<Box
-											position="relative"
-											overflow="hidden"
-											borderRadius="none"
-											aspectRatio={4 / 3}
-											cursor="pointer"
-											transition="all 0.3s ease"
-											sx={{ touchAction: "manipulation" }}
-											_hover={{
-												transform: { base: "none", md: "scale(1.02)" },
-											}}
-											_active={{
-												transform: "scale(0.98)",
-											}}
-										>
-											<SafeImage
-												src={src}
-												alt={`Gallery ${i + 1}`}
-												width={800}
-												height={600}
-												style={{
-													width: "100%",
-													height: "100%",
-													objectFit: "cover",
+					{!images || images.length === 0 ? (
+						<Box textAlign="center" py={12}>
+							<Text fontSize="lg" color="gray.500">
+								Trenutno nema slika u galeriji.
+							</Text>
+						</Box>
+					) : (
+						<PhotoProvider>
+							<SimpleGrid columns={{ base: 1, sm: 2, lg: 3 }} spacing={{ base: 3, md: 4 }} w="100%">
+								{images.map((src, i) => (
+									<motion.div
+										key={i}
+										initial={{ opacity: 0, scale: 0.9 }}
+										whileInView={{ opacity: 1, scale: 1 }}
+										viewport={{ once: true, margin: "-50px" }}
+										transition={{ duration: 0.4, delay: i * 0.08 }}
+									>
+										<PhotoView src={src}>
+											<Box
+												position="relative"
+												overflow="hidden"
+												borderRadius="none"
+												aspectRatio={4 / 3}
+												cursor="pointer"
+												transition="all 0.3s ease"
+												sx={{ touchAction: "manipulation" }}
+												_hover={{
+													transform: { base: "none", md: "scale(1.02)" },
 												}}
-											/>
-											<Box
-												position="absolute"
-												inset="0"
-												bg="black"
-												opacity={0}
-												_hover={{ opacity: { base: 0, md: 0.3 } }}
-												transition="opacity 0.3s ease"
-											/>
-											<Box
-												position="absolute"
-												top="50%"
-												left="50%"
-												transform="translate(-50%, -50%)"
-												opacity={0}
-												_hover={{ opacity: { base: 0, md: 1 } }}
-												transition="opacity 0.3s ease"
-												pointerEvents="none"
+												_active={{
+													transform: "scale(0.98)",
+												}}
 											>
-												<Icon
-													as={FiZoomIn}
-													boxSize={8}
-													color="white"
-													filter="drop-shadow(0 2px 4px rgba(0,0,0,0.5))"
+												<SafeImage
+													src={src}
+													alt={`Gallery ${i + 1}`}
+													width={800}
+													height={600}
+													style={{
+														width: "100%",
+														height: "100%",
+														objectFit: "cover",
+													}}
 												/>
+												<Box
+													position="absolute"
+													inset="0"
+													bg="black"
+													opacity={0}
+													_hover={{ opacity: { base: 0, md: 0.3 } }}
+													transition="opacity 0.3s ease"
+												/>
+												<Box
+													position="absolute"
+													top="50%"
+													left="50%"
+													transform="translate(-50%, -50%)"
+													opacity={0}
+													_hover={{ opacity: { base: 0, md: 1 } }}
+													transition="opacity 0.3s ease"
+													pointerEvents="none"
+												>
+													<Icon
+														as={FiZoomIn}
+														boxSize={8}
+														color="white"
+														filter="drop-shadow(0 2px 4px rgba(0,0,0,0.5))"
+													/>
+												</Box>
 											</Box>
+										</PhotoView>
+									</motion.div>
+								))}
+							</SimpleGrid>
+						</PhotoProvider>
+					)}
+				</VStack>
+			</Container>
+		</Box>
+	);
+};
+
+type Review = {
+	_id: string;
+	authorName: string;
+	rating: number;
+	text: string;
+	imageUrl?: string;
+	featured?: boolean;
+	createdAt?: string;
+};
+
+const GoogleReviewsSection: React.FC = () => {
+	const [reviews, setReviews] = useState<Review[]>([]);
+	const [loading, setLoading] = useState(true);
+	const [submitting, setSubmitting] = useState(false);
+	const [submitSuccess, setSubmitSuccess] = useState(false);
+	const [formData, setFormData] = useState({
+		authorName: "",
+		rating: 5,
+		text: "",
+		imageUrl: "",
+	});
+	const [uploadingImage, setUploadingImage] = useState(false);
+	const [imagePreview, setImagePreview] = useState<string | null>(null);
+	const [currentSlide, setCurrentSlide] = useState(0);
+	const [touchStart, setTouchStart] = useState(0);
+	const [touchEnd, setTouchEnd] = useState(0);
+	const [isPaused, setIsPaused] = useState(false);
+
+	useEffect(() => {
+		const loadReviews = async () => {
+			try {
+				const res = await fetch("/api/reviews", { cache: "no-store" });
+				const data = await res.json();
+				if (Array.isArray(data)) {
+					setReviews(data);
+				}
+			} catch (error) {
+				console.error("Failed to load reviews:", error);
+			} finally {
+				setLoading(false);
+			}
+		};
+		loadReviews();
+	}, []);
+
+	// Auto-slide za slider
+	useEffect(() => {
+		if (reviews.length <= 1 || isPaused) return;
+		const interval = setInterval(() => {
+			setCurrentSlide((prev) => (prev + 1) % reviews.length);
+		}, 5000);
+		return () => clearInterval(interval);
+	}, [reviews.length, isPaused]);
+
+	// Swipe handlers
+	const handleTouchStart = (e: React.TouchEvent) => {
+		setTouchStart(e.targetTouches[0].clientX);
+	};
+
+	const handleTouchMove = (e: React.TouchEvent) => {
+		setTouchEnd(e.targetTouches[0].clientX);
+	};
+
+	const handleTouchEnd = () => {
+		if (!touchStart || !touchEnd) return;
+		const distance = touchStart - touchEnd;
+		const isLeftSwipe = distance > 50;
+		const isRightSwipe = distance < -50;
+
+		if (isLeftSwipe) {
+			setIsPaused(true);
+			setCurrentSlide((prev) => (prev === reviews.length - 1 ? 0 : prev + 1));
+			setTimeout(() => setIsPaused(false), 10000); // Resume after 10 seconds
+		}
+		if (isRightSwipe) {
+			setIsPaused(true);
+			setCurrentSlide((prev) => (prev === 0 ? reviews.length - 1 : prev - 1));
+			setTimeout(() => setIsPaused(false), 10000); // Resume after 10 seconds
+		}
+	};
+
+	const handleSlideChange = (newSlide: number) => {
+		setIsPaused(true);
+		setCurrentSlide(newSlide);
+		setTimeout(() => setIsPaused(false), 10000); // Resume after 10 seconds
+	};
+
+	const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0];
+		if (!file) return;
+
+		// Provera tipa fajla
+		if (!file.type.startsWith("image/")) {
+			alert("Molimo izaberite sliku.");
+			return;
+		}
+
+		// Provera veličine (max 5MB)
+		if (file.size > 5 * 1024 * 1024) {
+			alert("Slika mora biti manja od 5MB.");
+			return;
+		}
+
+		setUploadingImage(true);
+		try {
+			const formData = new FormData();
+			formData.append("file", file);
+
+			const res = await fetch("/api/reviews/upload", {
+				method: "POST",
+				body: formData,
+			});
+
+			if (!res.ok) {
+				const error = await res.json();
+				throw new Error(error.error || "Greška pri upload-u slike");
+			}
+
+			const data = await res.json();
+			setFormData((prev) => ({ ...prev, imageUrl: data.url }));
+			setImagePreview(data.url);
+		} catch (error: any) {
+			console.error("Upload error:", error);
+			alert(error?.message || "Greška pri upload-u slike");
+		} finally {
+			setUploadingImage(false);
+		}
+	};
+
+	const removeImage = () => {
+		setFormData((prev) => ({ ...prev, imageUrl: "" }));
+		setImagePreview(null);
+	};
+
+	const handleSubmit = async (e: React.FormEvent) => {
+		e.preventDefault();
+		setSubmitting(true);
+		setSubmitSuccess(false);
+
+		try {
+			const res = await fetch("/api/reviews", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					authorName: formData.authorName,
+					rating: formData.rating,
+					text: formData.text,
+					imageUrl: formData.imageUrl || undefined,
+				}),
+			});
+
+			if (!res.ok) {
+				const error = await res.json();
+				throw new Error(error.error || "Greška pri slanju recenzije");
+			}
+
+			setSubmitSuccess(true);
+			setFormData({ authorName: "", rating: 5, text: "", imageUrl: "" });
+			setImagePreview(null);
+			
+			// Reload reviews
+			const resReviews = await fetch("/api/reviews", { cache: "no-store" });
+			const data = await resReviews.json();
+			if (Array.isArray(data)) {
+				setReviews(data);
+			}
+
+			setTimeout(() => setSubmitSuccess(false), 5000);
+		} catch (error: any) {
+			console.error("Failed to submit review:", error);
+			alert(error?.message || "Greška pri slanju recenzije");
+		} finally {
+			setSubmitting(false);
+		}
+	};
+
+	const formatDate = (dateString?: string) => {
+		if (!dateString) return "";
+		const date = new Date(dateString);
+		const now = new Date();
+		const diffTime = Math.abs(now.getTime() - date.getTime());
+		const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+		
+		if (diffDays === 1) return "Pre 1 dan";
+		if (diffDays < 7) return `Pre ${diffDays} dana`;
+		if (diffDays < 30) return `Pre ${Math.floor(diffDays / 7)} nedelja`;
+		return `Pre ${Math.floor(diffDays / 30)} meseci`;
+	};
+
+	return (
+		<Box id="recenzije" py={{ base: 16, md: 32 }} bg="black">
+			<Container maxW="container.xl" px={{ base: 4, md: 8 }}>
+				<VStack spacing={{ base: 8, md: 12 }}>
+					<motion.div
+						initial={{ opacity: 0, y: 30 }}
+						whileInView={{ opacity: 1, y: 0 }}
+						viewport={{ once: true }}
+						transition={{ duration: 0.6 }}
+					>
+						<Text
+							fontSize={{ base: "xs", md: "sm" }}
+							color="gray.500"
+							letterSpacing={{ base: "0.15em", md: "0.2em" }}
+							textTransform="uppercase"
+							textAlign="center"
+							mb={{ base: 3, md: 4 }}
+						>
+							Recenzije
+						</Text>
+						<Heading
+							as="h2"
+							fontSize={{ base: "3xl", sm: "4xl", md: "5xl", lg: "6xl" }}
+							fontWeight="300"
+							letterSpacing={{ base: "-0.01em", md: "-0.02em" }}
+							textAlign="center"
+							color="white"
+							px={{ base: 2, md: 0 }}
+						>
+							Šta kažu naši gosti
+						</Heading>
+					</motion.div>
+
+					{/* Forma za ostavljanje recenzije */}
+					<motion.div
+						initial={{ opacity: 0, y: 30 }}
+						whileInView={{ opacity: 1, y: 0 }}
+						viewport={{ once: true }}
+						transition={{ duration: 0.6 }}
+						style={{ width: "100%", maxWidth: "600px", margin: "0 auto" }}
+					>
+						<Card bg="gray.900" borderWidth="1px" borderColor="gray.800" borderRadius="none" p={{ base: 6, md: 8 }}>
+							<VStack spacing={6} align="stretch">
+								<Heading size="md" color="white" textAlign="center">
+									Ostavi recenziju
+								</Heading>
+								<form onSubmit={handleSubmit}>
+									<VStack spacing={4}>
+										<Input
+											placeholder="Tvoje ime"
+											value={formData.authorName}
+											onChange={(e) => setFormData({ ...formData, authorName: e.target.value })}
+											required
+											bg="black"
+											borderColor="gray.700"
+											color="white"
+											borderRadius="none"
+											_placeholder={{ color: "gray.500" }}
+											_focus={{ borderColor: "yellow.400" }}
+										/>
+										<Box w="100%">
+											<Text mb={2} color="gray.400" fontSize="sm">
+												Ocena:
+											</Text>
+											<HStack spacing={2} justify="center">
+												{Array.from({ length: 5 }).map((_, i) => (
+													<Box
+														key={i}
+														as="button"
+														type="button"
+														onClick={() => setFormData({ ...formData, rating: i + 1 })}
+														cursor="pointer"
+														transition="all 0.2s ease"
+														_hover={{ transform: "scale(1.2)" }}
+														_active={{ transform: "scale(0.95)" }}
+														aria-label={`Ocena ${i + 1}`}
+														bg="transparent"
+														border="none"
+														p={0}
+														display="flex"
+														alignItems="center"
+														justifyContent="center"
+													>
+														{i < formData.rating ? (
+															<Icon
+																as={AiFillStar}
+																boxSize={8}
+																color="yellow.400"
+															/>
+														) : (
+															<Icon
+																as={AiOutlineStar}
+																boxSize={8}
+																color="gray.600"
+															/>
+														)}
+													</Box>
+												))}
+											</HStack>
 										</Box>
-									</PhotoView>
-								</motion.div>
-							))}
-						</SimpleGrid>
-					</PhotoProvider>
+										<Input
+											as="textarea"
+											placeholder="Tvoja recenzija..."
+											value={formData.text}
+											onChange={(e) => setFormData({ ...formData, text: e.target.value })}
+											required
+											rows={4}
+											bg="black"
+											borderColor="gray.700"
+											color="white"
+											borderRadius="none"
+											_placeholder={{ color: "gray.500" }}
+											_focus={{ borderColor: "yellow.400" }}
+										/>
+										<Box w="100%">
+											<Text mb={2} color="gray.400" fontSize="sm">
+												Slika profila (opciono):
+											</Text>
+											{imagePreview ? (
+												<Box position="relative" w="100px" h="100px" mb={2}>
+													<SafeImage
+														src={imagePreview}
+														alt="Preview"
+														width={100}
+														height={100}
+														style={{
+															width: "100%",
+															height: "100%",
+															objectFit: "cover",
+															borderRadius: "50%",
+														}}
+													/>
+													<IconButton
+														aria-label="Ukloni sliku"
+														icon={<FiX />}
+														size="sm"
+														position="absolute"
+														top={-2}
+														right={-2}
+														bg="red.500"
+														color="white"
+														borderRadius="full"
+														onClick={removeImage}
+														_hover={{ bg: "red.600" }}
+													/>
+												</Box>
+											) : (
+												<Box
+													as="label"
+													cursor="pointer"
+													borderWidth="2px"
+													borderStyle="dashed"
+													borderColor="gray.600"
+													borderRadius="md"
+													p={4}
+													display="flex"
+													flexDirection="column"
+													alignItems="center"
+													justifyContent="center"
+													gap={2}
+													bg="black"
+													transition="all 0.2s"
+													_hover={{
+														borderColor: "yellow.400",
+														bg: "gray.900",
+													}}
+												>
+													<input
+														type="file"
+														accept="image/*"
+														onChange={handleImageUpload}
+														style={{ display: "none" }}
+														disabled={uploadingImage}
+													/>
+													{uploadingImage ? (
+														<>
+															<Spinner size="md" color="yellow.400" />
+															<Text fontSize="sm" color="gray.400">
+																Uploadujem...
+															</Text>
+														</>
+													) : (
+														<>
+															<Icon as={FiUpload} boxSize={6} color="gray.400" />
+															<Text fontSize="sm" color="gray.400" textAlign="center">
+																Klikni da izabereš sliku
+															</Text>
+															<Text fontSize="xs" color="gray.500" textAlign="center">
+																Max 5MB
+															</Text>
+														</>
+													)}
+												</Box>
+											)}
+										</Box>
+										{submitSuccess && (
+											<Box bg="green.900" color="green.200" p={3} borderRadius="md" w="100%" textAlign="center">
+												Hvala! Tvoja recenzija je uspešno poslata.
+											</Box>
+										)}
+										<Button
+											type="submit"
+											colorScheme="yellow"
+											size="lg"
+											w="100%"
+											borderRadius="none"
+											isLoading={submitting}
+											rightIcon={<FiArrowRight />}
+											_hover={{ bg: "yellow.500" }}
+										>
+											Pošalji recenziju
+										</Button>
+									</VStack>
+								</form>
+							</VStack>
+						</Card>
+					</motion.div>
+
+					{/* Slider za prethodne recenzije */}
+					{loading ? (
+						<Flex justify="center" py={12}>
+							<Spinner size="xl" color="yellow.400" />
+						</Flex>
+					) : reviews.length === 0 ? (
+						<Box textAlign="center" py={12}>
+							<Text fontSize="lg" color="gray.500">
+								Trenutno nema dostupnih recenzija. Budi prvi koji će ostaviti recenziju!
+							</Text>
+						</Box>
+					) : (
+						<Box 
+							w="100%" 
+							maxW="900px" 
+							mx="auto" 
+							position="relative"
+							onTouchStart={handleTouchStart}
+							onTouchMove={handleTouchMove}
+							onTouchEnd={handleTouchEnd}
+						>
+							{/* Navigation arrows */}
+							{reviews.length > 1 && (
+								<>
+									<IconButton
+										aria-label="Prethodna recenzija"
+										icon={<FiArrowRight style={{ transform: "rotate(180deg)" }} />}
+										position="absolute"
+										left={{ base: 2, md: -12 }}
+										top="50%"
+										transform="translateY(-50%)"
+										zIndex={2}
+										bg="gray.900"
+										color="yellow.400"
+										borderWidth="1px"
+										borderColor="yellow.400"
+										borderRadius="full"
+										_hover={{ bg: "yellow.400", color: "black" }}
+										onClick={() => handleSlideChange(currentSlide === 0 ? reviews.length - 1 : currentSlide - 1)}
+										display={{ base: "none", md: "flex" }}
+									/>
+									<IconButton
+										aria-label="Sledeća recenzija"
+										icon={<FiArrowRight />}
+										position="absolute"
+										right={{ base: 2, md: -12 }}
+										top="50%"
+										transform="translateY(-50%)"
+										zIndex={2}
+										bg="gray.900"
+										color="yellow.400"
+										borderWidth="1px"
+										borderColor="yellow.400"
+										borderRadius="full"
+										_hover={{ bg: "yellow.400", color: "black" }}
+										onClick={() => handleSlideChange(currentSlide === reviews.length - 1 ? 0 : currentSlide + 1)}
+										display={{ base: "none", md: "flex" }}
+									/>
+								</>
+							)}
+							
+							<Box overflow="hidden" borderRadius="none">
+								<Flex
+									transform={`translateX(-${currentSlide * 100}%)`}
+									transition="transform 0.5s ease-in-out"
+									w={`${reviews.length * 100}%`}
+								>
+									{reviews.map((review) => (
+										<Box key={review._id} w={`${100 / reviews.length}%`} px={4} flexShrink={0}>
+											<Card
+												bg="gray.900"
+												borderWidth="1px"
+												borderColor="gray.800"
+												borderRadius="none"
+												p={6}
+												h="100%"
+												_hover={{
+													borderColor: "yellow.400",
+												}}
+												transition="all 0.3s ease"
+											>
+												<VStack spacing={4} align="stretch" h="100%">
+													<HStack justify="space-between" align="start" spacing={4}>
+														{review.imageUrl ? (
+															<Box
+																w="60px"
+																h="60px"
+																borderRadius="full"
+																overflow="hidden"
+																flexShrink={0}
+																borderWidth="2px"
+																borderColor="yellow.400"
+															>
+																<SafeImage
+																	src={review.imageUrl}
+																	alt={review.authorName}
+																	width={60}
+																	height={60}
+																	style={{
+																		width: "100%",
+																		height: "100%",
+																		objectFit: "cover",
+																	}}
+																/>
+															</Box>
+														) : (
+															<Box
+																w="60px"
+																h="60px"
+																borderRadius="full"
+																bg="yellow.400"
+																display="flex"
+																alignItems="center"
+																justifyContent="center"
+																flexShrink={0}
+																fontWeight="bold"
+																fontSize="xl"
+																color="black"
+															>
+																{review.authorName.charAt(0).toUpperCase()}
+															</Box>
+														)}
+														<VStack align="start" spacing={1} flex="1">
+															<Text fontWeight="600" color="white" fontSize="lg">
+																{review.authorName}
+															</Text>
+															<HStack spacing={1}>
+																{Array.from({ length: 5 }).map((_, i) => (
+																	<Icon
+																		key={i}
+																		as={i < review.rating ? AiFillStar : AiOutlineStar}
+																		color={i < review.rating ? "yellow.400" : "gray.600"}
+																		boxSize={5}
+																	/>
+																))}
+															</HStack>
+														</VStack>
+													</HStack>
+													<Text color="gray.300" fontSize="sm" lineHeight="1.7" flex="1" fontStyle="italic">
+														"{review.text}"
+													</Text>
+													{review.createdAt && (
+														<Text color="gray.500" fontSize="xs">
+															{formatDate(review.createdAt)}
+														</Text>
+													)}
+												</VStack>
+											</Card>
+										</Box>
+									))}
+								</Flex>
+							</Box>
+							
+							{/* Navigation dots */}
+							{reviews.length > 1 && (
+								<HStack spacing={2} justify="center" mt={6}>
+									{reviews.map((_, idx) => (
+										<Box
+											key={idx}
+											w={currentSlide === idx ? "24px" : "8px"}
+											h="8px"
+											bg={currentSlide === idx ? "yellow.400" : "gray.600"}
+											borderRadius="full"
+											cursor="pointer"
+											onClick={() => handleSlideChange(idx)}
+											transition="all 0.3s ease"
+										/>
+									))}
+								</HStack>
+							)}
+						</Box>
+					)}
 				</VStack>
 			</Container>
 		</Box>

@@ -7,7 +7,11 @@ const nextConfig = {
       { protocol: 'https', hostname: 'placehold.co' },
       { protocol: 'https', hostname: 'api.qrserver.com' },
       { protocol: 'https', hostname: 'cf.bstatic.com' }
-    ]
+    ],
+    // Povećaj timeout za Cloudinary slike
+    minimumCacheTTL: 60,
+    // Omogući SVG samo za data URI
+    dangerouslyAllowSVG: false,
   }
 };
 

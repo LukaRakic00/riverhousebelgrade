@@ -20,7 +20,7 @@ function defaults() {
 	return {
 		heroImageUrl: "",
 		logoUrl: "https://res.cloudinary.com/dvohrn0zf/image/upload/v1762935030/s25-removebg-preview_yquban.png",
-		galleryImageUrls: [],
+		featuredImages: [],
 	};
 }
 
@@ -45,16 +45,12 @@ export async function GET() {
 			}
 		};
 		const heroOk = await check(config.heroImageUrl);
-		const validatedGallery = await Promise.all(
-			(config.galleryImageUrls || []).map(async (u: string) => (await check(u)) ? u : null)
-		);
 		clearTimeout(timeout);
-		const galleryImageUrls = validatedGallery.filter(Boolean) as string[];
 		const heroImageUrl = heroOk
 			? config.heroImageUrl
 			: "https://res.cloudinary.com/demo/image/upload/w_1600,c_fill/sample.jpg";
 		return NextResponse.json(
-			{ heroImageUrl, logoUrl: config.logoUrl, galleryImageUrls },
+			{ heroImageUrl, logoUrl: config.logoUrl, featuredImages: (config as any).featuredImages || [] },
 			{
 				headers: {
 					"Access-Control-Allow-Origin": "*",
@@ -78,20 +74,20 @@ export async function GET() {
 export async function PUT(req: Request) {
 	try {
 		const body = await req.json();
-		const { heroImageUrl, logoUrl, galleryImageUrls } = body || {};
-		if (!heroImageUrl || !Array.isArray(galleryImageUrls)) {
+		const { heroImageUrl, logoUrl, featuredImages } = body || {};
+		if (!heroImageUrl) {
 			return NextResponse.json({ error: "Pogrešni podaci." }, { status: 400 });
 		}
 		await connectToDatabase();
-		const updated = await SiteConfig.findOneAndUpdate(
-			{},
-			{ heroImageUrl, logoUrl, galleryImageUrls },
-			{ new: true, upsert: true }
-		);
+		const updateData: any = { heroImageUrl, logoUrl };
+		if (Array.isArray(featuredImages)) {
+			updateData.featuredImages = featuredImages.slice(0, 6); // Max 6 slika
+		}
+		const updated = await SiteConfig.findOneAndUpdate({}, updateData, { new: true, upsert: true });
 		return NextResponse.json({
 			heroImageUrl: updated.heroImageUrl,
 			logoUrl: updated.logoUrl,
-			galleryImageUrls: updated.galleryImageUrls,
+			featuredImages: updated.featuredImages || [],
 		});
 	} catch {
 		return NextResponse.json({ error: "Greška na serveru." }, { status: 500 });

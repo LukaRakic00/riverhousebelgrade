@@ -23,6 +23,7 @@ export async function GET(req: Request) {
 
 		let nextCursor: string | undefined;
 		const urls: string[] = [];
+		const images: Array<{ url: string; publicId: string }> = [];
 		do {
 			const res: any = await cloudinary.search
 				.expression(`folder=${folder}`)
@@ -32,13 +33,19 @@ export async function GET(req: Request) {
 				.execute();
 
 			for (const r of res.resources || []) {
-				if (r.secure_url) urls.push(r.secure_url as string);
+				if (r.secure_url) {
+					urls.push(r.secure_url as string);
+					images.push({
+						url: r.secure_url as string,
+						publicId: r.public_id as string,
+					});
+				}
 			}
 			nextCursor = res.next_cursor;
 			if (urls.length >= max) break;
 		} while (nextCursor);
 
-		return NextResponse.json({ folder, count: urls.length, urls });
+		return NextResponse.json({ folder, count: urls.length, urls, images });
 	} catch (e: any) {
 		return NextResponse.json({ error: e?.message || "Greska pri listanju Cloudinary foldera" }, { status: 500 });
 	}

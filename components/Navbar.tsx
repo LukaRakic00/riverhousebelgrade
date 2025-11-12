@@ -26,7 +26,7 @@ export function Navbar() {
 					<ul className="navbar-nav ms-auto mb-2 mb-lg-0">
 						<li className="nav-item"><Link href="/" className="nav-link">Početna</Link></li>
 						<li className="nav-item"><a href="#o-nama" className="nav-link">O nama</a></li>
-						<li className="nav-item"><a href="#galerija" className="nav-link">Galerija</a></li>
+						<li className="nav-item"><Link href="/galerija" className="nav-link">Galerija</Link></li>
 						<li className="nav-item"><a href="#kontakt" className="btn btn-primary ms-lg-2">Kontakt</a></li>
 					</ul>
 				</div>

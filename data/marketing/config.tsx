@@ -21,6 +21,7 @@ const siteConfig = {
       {
         id: 'galerija',
         label: 'Galerija',
+        href: '/galerija',
       },
       {
         id: 'kontakt',
@@ -40,7 +41,7 @@ const siteConfig = {
         label: '+381 60 123 4567',
       },
       {
-        href: 'https://maps.google.com/?q=Belgrade',
+        href: 'https://www.google.com/maps/search/?api=1&query=Belgrade+River+House',
         label: 'Lokacija (Google Maps)',
       },
     ],

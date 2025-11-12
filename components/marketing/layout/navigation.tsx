@@ -42,13 +42,16 @@ const Navigation: React.FC<NavigationProps> = ({ position = 'left' }) => {
   return (
     <>
       <HStack spacing="6" flexShrink={0} display={['none', null, 'flex']}>
-        {linksToShow.map(({ id, label }, i) => {
-        const computedHref = `/#${id}`
+        {linksToShow.map((link, i) => {
+        const { id, label } = link;
+        const href = 'href' in link ? link.href : `/#${id}`;
+        // Za linkove koji vode na druge rute (ne anchor), ne koristi scroll spy
+        const isExternalRoute = href && !href.startsWith('#');
         return (
           <NavLink
-            href={computedHref}
+            href={href}
             key={i}
-            isActive={!!(id && activeId === id)}
+            isActive={isExternalRoute ? path === href : !!(id && activeId === id)}
               fontSize="lg"
               fontWeight="semibold"
               lineHeight="2rem"
