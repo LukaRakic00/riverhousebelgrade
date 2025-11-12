@@ -548,12 +548,12 @@ const GoogleReviewsSection: React.FC = () => {
 		loadReviews();
 	}, []);
 
-	// Auto-slide za slider
+	// Auto-slide za slider - menjanje na 3 sekunde
 	useEffect(() => {
 		if (reviews.length <= 1 || isPaused) return;
 		const interval = setInterval(() => {
 			setCurrentSlide((prev) => (prev + 1) % reviews.length);
-		}, 5000);
+		}, 3000); // 3 sekunde
 		return () => clearInterval(interval);
 	}, [reviews.length, isPaused]);
 
@@ -580,12 +580,12 @@ const GoogleReviewsSection: React.FC = () => {
 		if (isLeftSwipe && reviews.length > 1) {
 			setIsPaused(true);
 			setCurrentSlide((prev) => (prev === reviews.length - 1 ? 0 : prev + 1));
-			setTimeout(() => setIsPaused(false), 5000);
+			setTimeout(() => setIsPaused(false), 3000);
 		}
 		if (isRightSwipe && reviews.length > 1) {
 			setIsPaused(true);
 			setCurrentSlide((prev) => (prev === 0 ? reviews.length - 1 : prev - 1));
-			setTimeout(() => setIsPaused(false), 5000);
+			setTimeout(() => setIsPaused(false), 3000);
 		}
 		setTouchStart(0);
 		setTouchEnd(0);
@@ -595,8 +595,9 @@ const GoogleReviewsSection: React.FC = () => {
 		if (newSlide < 0 || newSlide >= reviews.length) return;
 		setIsPaused(true);
 		setCurrentSlide(newSlide);
-		setTimeout(() => setIsPaused(false), 5000);
+		setTimeout(() => setIsPaused(false), 3000);
 	};
+
 
 	const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
@@ -1013,7 +1014,7 @@ const GoogleReviewsSection: React.FC = () => {
 												transition="all 0.3s ease"
 											>
 												<VStack spacing={4} align="stretch" h="100%">
-													<HStack justify="space-between" align="start" spacing={4}>
+													<HStack justify="flex-start" align="start" spacing={4} flexWrap="wrap">
 														{review.imageUrl ? (
 															<Box
 																w="60px"
@@ -1053,7 +1054,7 @@ const GoogleReviewsSection: React.FC = () => {
 																{review.authorName.charAt(0).toUpperCase()}
 															</Box>
 														)}
-														<VStack align="start" spacing={1} flex="1">
+														<VStack align="start" spacing={1} flex="1" minW="200px">
 															<Text fontWeight="600" color="white" fontSize="lg">
 																{review.authorName}
 															</Text>
@@ -1069,7 +1070,7 @@ const GoogleReviewsSection: React.FC = () => {
 															</HStack>
 														</VStack>
 													</HStack>
-													<Text color="gray.300" fontSize="sm" lineHeight="1.7" flex="1" fontStyle="italic">
+													<Text color="gray.300" fontSize="sm" lineHeight="1.7" fontStyle="italic" w="100%">
 														"{review.text}"
 													</Text>
 													{review.createdAt && (
