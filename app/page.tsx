@@ -322,26 +322,36 @@ const FeaturesSection = () => {
 			icon: FiHome,
 			title: "Privatni bazen i relaksacija",
 			customDescription: (
-				<VStack align="center" spacing={{ base: 3, md: 4 }} color="gray.300" textAlign="center">
+				<VStack align="stretch" spacing={{ base: 4, md: 5 }} color="gray.300">
 					<Box
 						bg="rgba(255,255,255,0.05)"
-						border="1px solid"
-						borderColor="rgba(255,255,255,0.1)"
-						borderRadius="lg"
-						px={{ base: 3, md: 4 }}
-						py={{ base: 2, md: 3 }}
+						borderLeft="3px solid"
+						borderColor="yellow.400"
+						borderRadius="md"
+						px={{ base: 4, md: 5 }}
+						py={{ base: 3, md: 4 }}
 					>
-						<Text fontWeight="600" color="yellow.300" textTransform="uppercase" letterSpacing="0.1em">
+						<Text fontWeight="600" color="yellow.300" textTransform="uppercase" letterSpacing="0.1em" fontSize={{ base: "xs", md: "sm" }} mb={2}>
 							Privatni spa trenutak
 						</Text>
+						<Text fontSize={{ base: "sm", md: "md" }} color="gray.300" lineHeight="1.7">
+							Sezonski bazen na otvorenom, sauna i hidromasažna kada – sve u službi potpunog resetovanja tela i uma. Uživajte u potpunoj privatnosti dok se opuštate u vodi ili uživate u toplini saune.
+						</Text>
 					</Box>
-					<Text fontSize={{ base: "sm", md: "md" }}>
-						Sezonski bazen na otvorenom, sauna i hidromasažna kada – sve u službi potpunog resetovanja tela i uma.
-					</Text>
-					<VStack align="center" spacing={2} fontSize={{ base: "sm", md: "md" }}>
-						<Text>Terasa nad rekom za prve jutarnje kafe i zlatne zalaske.</Text>
-						<Text>Savršeno mesto za romantični vikend, proslavu ili mini retreat.</Text>
-						<Text>Uređeno dvorište i prirodni hlad stvaraju filmski ambijent.</Text>
+					<VStack align="stretch" spacing={3}>
+						{[
+							"Terasa nad rekom za prve jutarnje kafe i zlatne zalaske",
+							"Savršeno mesto za romantični vikend, proslavu ili mini retreat",
+							"Uređeno dvorište i prirodni hlad stvaraju filmski ambijent",
+							"Panoramski pogled na reku i grad dok se opuštate",
+						].map((item, i) => (
+							<HStack key={i} spacing={3} align="flex-start">
+								<Icon as={FiCheck} color="yellow.400" mt={1} fontSize={{ base: "sm", md: "md" }} />
+								<Text fontSize={{ base: "sm", md: "md" }} color="gray.300" lineHeight="1.6">
+									{item}
+								</Text>
+							</HStack>
+						))}
 					</VStack>
 				</VStack>
 			),
@@ -458,9 +468,15 @@ const FeaturesSection = () => {
 												{slide.title}
 											</Heading>
 										</HStack>
-										<Text color="gray.300" lineHeight="1.7" fontSize="sm">
-											{slide.description}
-										</Text>
+										{slide.customDescription ? (
+											<Box>
+												{slide.customDescription}
+											</Box>
+										) : (
+											<Text color="gray.300" lineHeight="1.7" fontSize="sm">
+												{slide.description}
+											</Text>
+										)}
 									</VStack>
 								</Card>
 							))}
