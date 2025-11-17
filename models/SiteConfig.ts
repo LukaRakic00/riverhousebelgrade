@@ -4,6 +4,7 @@ export interface ISiteConfig {
 	heroImageUrl: string;
 	logoUrl?: string;
 	featuredImages: string[]; // 6 udarnih slika za landing page
+	instagramImages: string[];
 	updatedAt?: Date;
 	createdAt?: Date;
 }
@@ -12,7 +13,8 @@ const SiteConfigSchema = new Schema<ISiteConfig>(
 	{
 		heroImageUrl: { type: String, required: true },
 		logoUrl: { type: String, required: false },
-		featuredImages: { type: [String], required: true, default: [] }
+		featuredImages: { type: [String], required: true, default: [] },
+		instagramImages: { type: [String], required: true, default: [] },
 	},
 	{ timestamps: true }
 );

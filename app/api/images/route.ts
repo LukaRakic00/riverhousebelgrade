@@ -16,11 +16,14 @@ export async function OPTIONS() {
 	});
 }
 
+const LOGO_FALLBACK = "/static/favicons/s25-removebg-preview.png";
+
 function defaults() {
 	return {
 		heroImageUrl: "",
-		logoUrl: "https://res.cloudinary.com/dvohrn0zf/image/upload/v1762935030/s25-removebg-preview_yquban.png",
+		logoUrl: LOGO_FALLBACK,
 		featuredImages: [],
+		instagramImages: [],
 	};
 }
 
@@ -33,24 +36,33 @@ export async function GET() {
 			config = await SiteConfig.create(def);
 		}
 		// Validate URLs to avoid upstream 404 spam
-		const controller = new AbortController();
-		const timeout = setTimeout(() => controller.abort(), 2500);
+		const isExternal = (url?: string) => !!url && /^https?:\/\//.test(url);
 		const check = async (url?: string) => {
 			if (!url) return false;
+			if (!isExternal(url)) return true;
 			try {
+				const controller = new AbortController();
+				const timeout = setTimeout(() => controller.abort(), 2500);
 				const res = await fetch(url, { method: "HEAD", cache: "no-store", signal: controller.signal as any });
+				clearTimeout(timeout);
 				return res.ok;
 			} catch {
 				return false;
 			}
 		};
 		const heroOk = await check(config.heroImageUrl);
-		clearTimeout(timeout);
+		const logoOk = await check(config.logoUrl);
 		const heroImageUrl = heroOk
 			? config.heroImageUrl
 			: "https://res.cloudinary.com/demo/image/upload/w_1600,c_fill/sample.jpg";
+		const logoUrl = logoOk ? config.logoUrl : LOGO_FALLBACK;
 		return NextResponse.json(
-			{ heroImageUrl, logoUrl: config.logoUrl, featuredImages: (config as any).featuredImages || [] },
+			{
+				heroImageUrl,
+				logoUrl,
+				featuredImages: (config as any).featuredImages || [],
+				instagramImages: (config as any).instagramImages || [],
+			},
 			{
 				headers: {
 					"Access-Control-Allow-Origin": "*",
@@ -74,20 +86,24 @@ export async function GET() {
 export async function PUT(req: Request) {
 	try {
 		const body = await req.json();
-		const { heroImageUrl, logoUrl, featuredImages } = body || {};
+		const { heroImageUrl, logoUrl, featuredImages, instagramImages } = body || {};
 		if (!heroImageUrl) {
 			return NextResponse.json({ error: "Pogrešni podaci." }, { status: 400 });
 		}
 		await connectToDatabase();
-		const updateData: any = { heroImageUrl, logoUrl };
+		const updateData: any = { heroImageUrl, logoUrl: logoUrl || LOGO_FALLBACK };
 		if (Array.isArray(featuredImages)) {
 			updateData.featuredImages = featuredImages.slice(0, 6); // Max 6 slika
+		}
+		if (Array.isArray(instagramImages)) {
+			updateData.instagramImages = instagramImages.slice(0, 10);
 		}
 		const updated = await SiteConfig.findOneAndUpdate({}, updateData, { new: true, upsert: true });
 		return NextResponse.json({
 			heroImageUrl: updated.heroImageUrl,
 			logoUrl: updated.logoUrl,
 			featuredImages: updated.featuredImages || [],
+			instagramImages: updated.instagramImages || [],
 		});
 	} catch {
 		return NextResponse.json({ error: "Greška na serveru." }, { status: 500 });

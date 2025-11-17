@@ -22,10 +22,12 @@ import {
 	CardHeader,
 	Input,
 	Spinner,
+	Tag,
+	useBreakpointValue,
 	useColorModeValue,
 } from "@chakra-ui/react";
 import { Br } from "@saas-ui/react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
 	FiArrowRight,
 	FiCheck,
@@ -43,14 +45,14 @@ import { PhotoProvider, PhotoView } from "react-photo-view";
 import "react-photo-view/dist/react-photo-view.css";
 
 import * as React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { ButtonLink } from "#components/button-link/button-link";
 import { Faq } from "#components/faq";
 import faq from "#data/faq";
 import { SafeImage } from "../components/SafeImage";
 
-type SiteConfig = { heroImageUrl: string; featuredImages: string[] };
+type SiteConfig = { heroImageUrl: string; featuredImages: string[]; instagramImages: string[] };
 
 export default function HomePage() {
 	const [config, setConfig] = useState<SiteConfig | null>(null);
@@ -67,6 +69,8 @@ export default function HomePage() {
 			<AboutSection />
 			<GallerySection images={config?.featuredImages || []} />
 			<GoogleReviewsSection />
+			<BookingSection />
+			<InstagramSection images={config?.instagramImages || []} />
 			<RegistrationSection />
 			<FaqSection />
 		</Box>
@@ -95,6 +99,31 @@ const AnimatedText: React.FC<{ children: string; delay?: number }> = ({ children
 				</motion.span>
 			))}
 		</>
+	);
+};
+
+const MobileSnapCarousel: React.FC<{ items: React.ReactNode[]; cardWidth?: string }> = ({ items, cardWidth = "85%" }) => {
+	return (
+		<Box
+			w="100%"
+			display="flex"
+			overflowX="auto"
+			gap={4}
+			scrollSnapType="x mandatory"
+			px={1}
+			py={2}
+			sx={{
+				scrollbarWidth: "none",
+				msOverflowStyle: "none",
+				"&::-webkit-scrollbar": { display: "none" },
+			}}
+		>
+			{items.map((item, idx) => (
+				<Box key={idx} flex="0 0 auto" w={cardWidth} scrollSnapAlign="center">
+					{item}
+				</Box>
+			))}
+		</Box>
 	);
 };
 
@@ -142,8 +171,8 @@ const HeroSection: React.FC<{ heroUrl?: string }> = ({ heroUrl }) => {
 				bg="linear-gradient(to bottom, rgba(0,0,0,0.6), rgba(0,0,0,0.8))"
 				zIndex={1}
 			/>
-			<Container maxW="container.xl" position="relative" zIndex={2} px={{ base: 4, md: 8 }} py={{ base: 20, md: 0 }}>
-				<VStack spacing={{ base: 6, md: 8 }} alignItems="center" textAlign="center">
+			<Container maxW="container.xl" position="relative" zIndex={2} px={{ base: 4, md: 8 }} py={{ base: 36, md: 12 }}>
+				<VStack spacing={{ base: 6, md: 8 }} alignItems="center" textAlign="center" mt={{ base: 12, md: 16 }}>
 					<motion.div
 						initial={{ opacity: 0, y: 30 }}
 						animate={{ opacity: 1, y: 0 }}
@@ -281,6 +310,7 @@ const HeroSection: React.FC<{ heroUrl?: string }> = ({ heroUrl }) => {
 const FeaturesSection = () => {
 	const [currentSlide, setCurrentSlide] = useState(0);
 	const [isPaused, setIsPaused] = useState(false);
+	const isTouch = useBreakpointValue({ base: true, md: false });
 
 	const slides = [
 		{
@@ -291,7 +321,30 @@ const FeaturesSection = () => {
 		{
 			icon: FiHome,
 			title: "Privatni bazen i relaksacija",
-			description: "Uživajte u luksuzu sopstvenog sezonskog bazena na otvorenom, opustite se u sauni ili hidromasažnoj kadi. Potpuni mir daleko od gradske vreve, a opet na dohvat centra.",
+			customDescription: (
+				<VStack align="center" spacing={{ base: 3, md: 4 }} color="gray.300" textAlign="center">
+					<Box
+						bg="rgba(255,255,255,0.05)"
+						border="1px solid"
+						borderColor="rgba(255,255,255,0.1)"
+						borderRadius="lg"
+						px={{ base: 3, md: 4 }}
+						py={{ base: 2, md: 3 }}
+					>
+						<Text fontWeight="600" color="yellow.300" textTransform="uppercase" letterSpacing="0.1em">
+							Privatni spa trenutak
+						</Text>
+					</Box>
+					<Text fontSize={{ base: "sm", md: "md" }}>
+						Sezonski bazen na otvorenom, sauna i hidromasažna kada – sve u službi potpunog resetovanja tela i uma.
+					</Text>
+					<VStack align="center" spacing={2} fontSize={{ base: "sm", md: "md" }}>
+						<Text>Terasa nad rekom za prve jutarnje kafe i zlatne zalaske.</Text>
+						<Text>Savršeno mesto za romantični vikend, proslavu ili mini retreat.</Text>
+						<Text>Uređeno dvorište i prirodni hlad stvaraju filmski ambijent.</Text>
+					</VStack>
+				</VStack>
+			),
 		},
 		{
 			icon: FiUsers,
@@ -317,12 +370,12 @@ const FeaturesSection = () => {
 
 	// Auto-slide na svakih 7 sekundi
 	useEffect(() => {
-		if (slides.length <= 1 || isPaused) return;
+		if (slides.length <= 1 || isPaused || isTouch) return;
 		const interval = setInterval(() => {
 			setCurrentSlide((prev) => (prev + 1) % slides.length);
 		}, 7000);
 		return () => clearInterval(interval);
-	}, [slides.length, isPaused]);
+	}, [slides.length, isPaused, isTouch]);
 
 	const handleSlideChange = (newSlide: number) => {
 		if (newSlide < 0 || newSlide >= slides.length) return;
@@ -374,6 +427,45 @@ const FeaturesSection = () => {
 						</Heading>
 					</motion.div>
 
+					{isTouch ? (
+						<MobileSnapCarousel
+							items={slides.map((slide, idx) => (
+								<Card
+									key={idx}
+									bg="gray.900"
+									borderWidth="1px"
+									borderColor="gray.800"
+									borderRadius="lg"
+									p={6}
+									display="flex"
+									minH={{ base: "360px", md: "auto" }}
+								>
+									<VStack spacing={4} align="stretch" h="100%" justify="space-between">
+										<HStack spacing={4}>
+											<Box
+												w="56px"
+												h="56px"
+												bg="yellow.400"
+												color="black"
+												borderRadius="md"
+												display="flex"
+												alignItems="center"
+												justifyContent="center"
+											>
+												<Icon as={slide.icon} fontSize="2xl" />
+											</Box>
+											<Heading as="h3" fontSize="lg" fontWeight="500" color="white">
+												{slide.title}
+											</Heading>
+										</HStack>
+										<Text color="gray.300" lineHeight="1.7" fontSize="sm">
+											{slide.description}
+										</Text>
+									</VStack>
+								</Card>
+							))}
+						/>
+					) : (
 					<Box
 						w="100%"
 						maxW="900px"
@@ -422,12 +514,7 @@ const FeaturesSection = () => {
 							</>
 						)}
 
-						<Box
-							overflow="hidden"
-							borderRadius="none"
-							position="relative"
-							w="100%"
-						>
+							<Box overflow="hidden" borderRadius="none" position="relative" w="100%">
 							<Flex
 								w={`${slides.length * 100}%`}
 								style={{
@@ -437,12 +524,7 @@ const FeaturesSection = () => {
 								}}
 							>
 								{slides.map((slide, idx) => (
-									<Box
-										key={idx}
-										w={`${100 / slides.length}%`}
-										flexShrink={0}
-										px={{ base: 2, md: 4 }}
-									>
+										<Box key={idx} w={`${100 / slides.length}%`} flexShrink={0} px={{ base: 2, md: 4 }}>
 										<Card
 											bg="gray.900"
 											borderWidth="1px"
@@ -479,6 +561,9 @@ const FeaturesSection = () => {
 												>
 													{slide.title}
 												</Heading>
+												{slide.customDescription ? (
+													<Box w="100%" px={{ base: 2, md: 0 }}>{slide.customDescription}</Box>
+												) : (
 												<Text
 													color="gray.300"
 													lineHeight={{ base: "1.7", md: "1.8" }}
@@ -488,6 +573,7 @@ const FeaturesSection = () => {
 												>
 													{slide.description}
 												</Text>
+													)}
 											</VStack>
 										</Card>
 									</Box>
@@ -514,6 +600,7 @@ const FeaturesSection = () => {
 							</HStack>
 						)}
 					</Box>
+					)}
 				</VStack>
 			</Container>
 		</Box>
@@ -523,31 +610,83 @@ const FeaturesSection = () => {
 const AboutSection = () => {
 	const [currentSlide, setCurrentSlide] = useState(0);
 	const [isPaused, setIsPaused] = useState(false);
+	const isTouch = useBreakpointValue({ base: true, md: false });
 
 	const slides = [
 		{
 			title: "Belgrade River House – luksuzni mir uz reku",
 			content: (
-				<VStack spacing={{ base: 2, md: 4 }} align="stretch">
-					<Text fontSize={{ base: "xs", md: "sm", lg: "md" }} color="gray.300" lineHeight={{ base: "1.6", md: "1.7", lg: "1.8" }} textAlign="center">
-						Belgrade River House – luksuzni mir uz reku, samo nekoliko minuta od srca Beograda
-					</Text>
-					<Text fontSize={{ base: "xs", md: "sm", lg: "md" }} color="gray.300" lineHeight={{ base: "1.6", md: "1.7", lg: "1.8" }}>
-						Smeštena na jedinstvenoj lokaciji uz obalu reke, Belgrade River House predstavlja savršeno utočište za one koji traže spoj modernog komfora, privatnosti i prelepog pogleda na grad. Ova ekskluzivna vila nudi sve što je potrebno za potpunu relaksaciju – od privatnog bazena i uređenog dvorišta, do prostrane terase sa nezaboravnim panoramskim pogledom na Beograd i reku.
-					</Text>
+				<VStack spacing={{ base: 4, md: 6 }} align="stretch">
+					<Box
+						bg="rgba(255,255,255,0.05)"
+						borderRadius="xl"
+						boxShadow="0 15px 45px rgba(0,0,0,0.35)"
+						p={{ base: 3, md: 4 }}
+						border="1px solid"
+						borderColor="rgba(255,255,255,0.08)"
+					>
+						<Text
+							fontSize={{ base: "xs", md: "sm" }}
+							color="yellow.300"
+							fontWeight="600"
+							textTransform="uppercase"
+							letterSpacing="0.08em"
+						>
+							Luksuzni mir uz reku
+						</Text>
+						<Text fontSize={{ base: "xs", md: "sm" }} color="white" fontWeight="500" mt={2}>
+							Samo nekoliko minuta od centra, a potpuno skrivena u svojoj oazi mira.
+						</Text>
+						<Text fontSize={{ base: "xs", md: "sm" }} color="gray.300" lineHeight="1.7" mt={2}>
+							Privatna terasa nad rekom, vedri enterijer i uređeno dvorište pripremaju scenu za svaki ritual – od jutarnje kafe do elegantne večeri.
+						</Text>
+					</Box>
+					<Box
+						bg="blackAlpha.400"
+						borderRadius="lg"
+						p={{ base: 3, md: 4 }}
+						border="1px solid"
+						borderColor="rgba(255,255,255,0.05)"
+					>
+						<Text fontSize={{ base: "xs", md: "sm" }} color="gray.300" lineHeight="1.7">
+							Savršen izbor za sve koji žele da se isključe iz gradske svakodnevnice, a ipak zadrže blizinu gradskog ritma.
+						</Text>
+					</Box>
 				</VStack>
 			),
 		},
 		{
 			title: "Privatni bazen i relaksacija",
 			content: (
-				<VStack spacing={{ base: 2, md: 4 }} align="stretch">
-					<Text fontSize={{ base: "xs", md: "sm", lg: "md" }} color="gray.300" lineHeight={{ base: "1.6", md: "1.7", lg: "1.8" }}>
-						Uživajte u luksuzu sopstvenog sezonskog bazena na otvorenom, opustite se u sauni ili hidromasažnoj kadi, i doživite potpuni mir daleko od gradske vreve, a opet na dohvat centra.
+				<VStack spacing={{ base: 4, md: 5 }} align="stretch">
+					<Box
+						bg="gray.800"
+						borderLeft="3px solid"
+						borderColor="yellow.400"
+						p={{ base: 4, md: 5 }}
+						borderRadius="md"
+					>
+						<Text fontSize={{ base: "sm", md: "md" }} color="white" fontWeight="500" mb={2}>
+							Privatni spa trenutak
 					</Text>
-					<Text fontSize={{ base: "xs", md: "sm", lg: "md" }} color="gray.300" lineHeight={{ base: "1.6", md: "1.7", lg: "1.8" }}>
-						Skrivena od gradske vreve, a ipak nadomak centra Beograda, Belgrade River House predstavlja savršen spoj luksuza, udobnosti i prirode. Naša ekskluzivna vila nudi jedinstveno iskustvo boravka uz reku, idealno za opuštanje, romantični vikend, porodični odmor ili privatni retreat.
+						<Text fontSize={{ base: "xs", md: "sm" }} color="gray.300" lineHeight="1.7">
+							Sezonski bazen na otvorenom, sauna i hidromasažna kada – sve u službi potpunog resetovanja tela i uma.
 					</Text>
+					</Box>
+					<VStack align="stretch" spacing={3}>
+						{[
+							"Terasa nad rekom za prve jutarnje kafe i zlatne zalaske.",
+							"Savršeno mesto za romantični vikend, proslavu ili mini retreat.",
+							"Uređeno dvorište i prirodni hlad stvaraju filmski ambijent.",
+						].map((item, i) => (
+							<HStack key={i} spacing={3} align="flex-start">
+								<Icon as={FiCheck} color="yellow.400" mt={1} />
+								<Text fontSize={{ base: "xs", md: "sm" }} color="gray.300" lineHeight="1.6">
+									{item}
+								</Text>
+							</HStack>
+						))}
+					</VStack>
 				</VStack>
 			),
 		},
@@ -558,7 +697,8 @@ const AboutSection = () => {
 					<Text fontSize={{ base: "xs", md: "sm", lg: "md" }} color="gray.300" lineHeight={{ base: "1.6", md: "1.7", lg: "1.8" }} mb={{ base: 2, md: 3 }}>
 						Vila je klimatizovana i pažljivo uređena kako bi pružila osećaj doma i ekskluzivnosti. Gostima su na raspolaganju:
 					</Text>
-					<SimpleGrid columns={{ base: 1, md: 2 }} spacing={{ base: 2, md: 3, lg: 4 }} w="100%">
+					<Box bg="blackAlpha.400" borderRadius="lg" p={{ base: 4, md: 6 }}>
+						<SimpleGrid columns={{ base: 1, md: 2 }} spacing={{ base: 3, md: 4 }} w="100%">
 						{[
 							"dve kompletno uređene spavaće sobe",
 							"prostran dnevni boravak sa flat-screen TV-om i satelitskim kanalima",
@@ -573,6 +713,7 @@ const AboutSection = () => {
 							</HStack>
 						))}
 					</SimpleGrid>
+					</Box>
 				</VStack>
 			),
 		},
@@ -638,29 +779,43 @@ const AboutSection = () => {
 		{
 			title: "Iskustvo koje se pamti",
 			content: (
-				<VStack spacing={{ base: 2, md: 4 }} align="stretch">
-					<Text fontSize={{ base: "xs", md: "sm", lg: "md" }} color="gray.300" lineHeight={{ base: "1.6", md: "1.7", lg: "1.8" }}>
-						Opustite se u privatnom bazenu, uživajte u sauni ili hidromasažnoj kadi, i dopustite da vas pogledi na reku i grad ispune mirom.
-					</Text>
-					<Text fontSize={{ base: "xs", md: "sm", lg: "md" }} color="gray.300" lineHeight={{ base: "1.6", md: "1.7", lg: "1.8" }} textAlign="center">
-						Bez obzira da li dolazite zbog posla, odmora ili proslave posebnog trenutka, Belgrade River House nudi mir, udobnost i privatnost na najvišem nivou.
-					</Text>
-					<Box 
-						bg="gray.800" 
-						borderLeft={{ base: "2px solid", md: "3px solid" }}
-						borderColor="yellow.400" 
-						p={{ base: 2.5, md: 4, lg: 5 }} 
-						w="100%" 
-						mt={{ base: 2, md: 2 }}
-						borderRadius={{ base: "none", md: "none" }}
+				<VStack spacing={{ base: 3, md: 4 }} align="stretch">
+					<Box
+						bg="rgba(255,255,255,0.04)"
+						borderRadius="xl"
+						p={{ base: 3, md: 4 }}
+						border="1px solid"
+						borderColor="rgba(255,255,255,0.08)"
 					>
-						<Text 
-							fontSize={{ base: "xs", md: "sm", lg: "md" }} 
-							color="white" 
-							fontWeight="300" 
-							lineHeight={{ base: "1.5", md: "1.6", lg: "1.7" }} 
+						<Text fontSize={{ base: "xs", md: "sm" }} color="gray.300" lineHeight="1.7">
+							Opustite se u privatnom bazenu, uronite u saunu ili hidromasažnu kadu i dopustite panoramskom pogledu da vas potpuno odvoji od svakodnevice.
+						</Text>
+					</Box>
+					<Box
+						bg="blackAlpha.400"
+						borderRadius="lg"
+						p={{ base: 3, md: 4 }}
+						boxShadow="inset 0 0 30px rgba(0,0,0,0.3)"
+					>
+						<Text fontSize={{ base: "xs", md: "sm" }} color="gray.200" lineHeight="1.7" textAlign="center">
+							Za posao, romantični beg ili posebnu proslavu – River House donosi mir, privatnost i boutique udobnost u intimnom formatu.
+						</Text>
+					</Box>
+					<Box
+						bg="gray.800"
+						border="1px solid"
+						borderColor="yellow.500"
+						p={{ base: 2.5, md: 4 }}
+						borderRadius="lg"
+					>
+						<Text
+							fontSize={{ base: "xs", md: "sm" }}
+							color="white"
+							fontWeight="500"
+							lineHeight="1.6"
 							textAlign="center"
-							px={{ base: 0, md: 0 }}
+							fontStyle="italic"
+							letterSpacing="0.02em"
 						>
 							Belgrade River House – gde se luksuz susreće sa spokojem, a Beograd pokazuje svoje najlepše lice.
 						</Text>
@@ -672,12 +827,12 @@ const AboutSection = () => {
 
 	// Auto-slide na svakih 7 sekundi
 	useEffect(() => {
-		if (slides.length <= 1 || isPaused) return;
+		if (slides.length <= 1 || isPaused || isTouch) return;
 		const interval = setInterval(() => {
 			setCurrentSlide((prev) => (prev + 1) % slides.length);
 		}, 7000);
 		return () => clearInterval(interval);
-	}, [slides.length, isPaused]);
+	}, [slides.length, isPaused, isTouch]);
 
 	const handleSlideChange = (newSlide: number) => {
 		if (newSlide < 0 || newSlide >= slides.length) return;
@@ -740,7 +895,7 @@ const AboutSection = () => {
 						onMouseLeave={() => setIsPaused(false)}
 					>
 						{/* Navigation arrows */}
-						{slides.length > 1 && (
+						{slides.length > 1 && !isTouch && (
 							<>
 								<IconButton
 									aria-label="Prethodni slajd"
@@ -779,54 +934,33 @@ const AboutSection = () => {
 							</>
 						)}
 
-						{/* Mobile: Horizontal slider, Desktop: Fade in/out */}
-						{/* Mobile horizontal slider */}
-						<Box display={{ base: "block", md: "none" }} overflow="hidden" borderRadius="none" position="relative" w="100%">
-							<Flex
-								w={`${slides.length * 100}%`}
-								style={{
-									transform: `translateX(-${currentSlide * (100 / slides.length)}%)`,
-									transition: "transform 0.6s ease-in-out",
-									display: "flex",
-								}}
-							>
-								{slides.map((slide, idx) => (
-									<Box key={idx} w={`${100 / slides.length}%`} flexShrink={0} px={{ base: 2, md: 4 }}>
+						{isTouch ? (
+							<MobileSnapCarousel
+								cardWidth="90%"
+								items={slides.map((slide, idx) => (
 										<Card
+										key={idx}
 											bg="gray.900"
 											borderWidth="1px"
-											borderColor={currentSlide === idx ? "yellow.400" : "gray.800"}
-											borderRadius="none"
-											p={{ base: 6, md: 10 }}
-											w="100%"
-											h="100%"
-											_hover={{
-												borderColor: "yellow.400",
-											}}
-											transition="all 0.3s ease"
-										>
-											<VStack spacing={{ base: 3, md: 6 }} align="stretch" h="100%" justify="flex-start">
-												<Heading
-													as="h3"
-													fontSize={{ base: "lg", md: "2xl", lg: "3xl" }}
-													fontWeight="400"
-													color="white"
-													textAlign="center"
-													mb={{ base: 3, md: 5 }}
-													px={{ base: 2, md: 0 }}
-												>
+										borderColor="gray.800"
+										borderRadius="lg"
+										p={6}
+										minH={{ base: "420px", md: "auto" }}
+										display="flex"
+									>
+										<VStack spacing={4} align="stretch" h="100%">
+												<Heading as="h3" fontSize="lg" fontWeight="500" color="white">
 													{slide.title}
 												</Heading>
 												{slide.content}
 											</VStack>
 										</Card>
-									</Box>
 								))}
-							</Flex>
-						</Box>
-
+							/>
+						) : (
+							<>
 						{/* Desktop fade in/out container */}
-						<Box display={{ base: "none", md: "block" }} position="relative" w="100%" h="350px">
+								<Box position="relative" w="100%" h="350px">
 							{slides.map((slide, idx) => (
 								<motion.div
 									key={idx}
@@ -916,6 +1050,8 @@ const AboutSection = () => {
 									/>
 								))}
 							</HStack>
+								)}
+							</>
 						)}
 					</Box>
 				</VStack>
@@ -1064,6 +1200,7 @@ const GoogleReviewsSection: React.FC = () => {
 	const [imagePreview, setImagePreview] = useState<string | null>(null);
 	const [currentSlide, setCurrentSlide] = useState(0);
 	const [isPaused, setIsPaused] = useState(false);
+	const isTouch = useBreakpointValue({ base: true, md: false });
 
 	useEffect(() => {
 		const loadReviews = async () => {
@@ -1084,12 +1221,12 @@ const GoogleReviewsSection: React.FC = () => {
 
 	// Auto-slide za slider - menjanje na 3 sekunde
 	useEffect(() => {
-		if (reviews.length <= 1 || isPaused) return;
+		if (reviews.length <= 1 || isPaused || isTouch) return;
 		const interval = setInterval(() => {
 			setCurrentSlide((prev) => (prev + 1) % reviews.length);
 		}, 3000);
 		return () => clearInterval(interval);
-	}, [reviews.length, isPaused]);
+	}, [reviews.length, isPaused, isTouch]);
 
 	const handleSlideChange = (newSlide: number) => {
 		if (newSlide < 0 || newSlide >= reviews.length) return;
@@ -1441,6 +1578,82 @@ const GoogleReviewsSection: React.FC = () => {
 								Trenutno nema dostupnih recenzija. Budi prvi koji će ostaviti recenziju!
 							</Text>
 						</Box>
+					) : isTouch ? (
+						<Box w="100%">
+							<MobileSnapCarousel
+								cardWidth="90%"
+								items={reviews.map((review) => (
+									<Card
+										key={review._id}
+										bg="gray.900"
+										borderWidth="1px"
+										borderColor="gray.800"
+										borderRadius="lg"
+										p={4}
+									>
+										<VStack spacing={3} align="stretch">
+											<HStack align="start" spacing={3}>
+												{review.imageUrl ? (
+													<Box
+														w="50px"
+														h="50px"
+														borderRadius="full"
+														overflow="hidden"
+														borderWidth="2px"
+														borderColor="yellow.400"
+													>
+														<SafeImage
+															src={review.imageUrl}
+															alt={review.authorName}
+															width={50}
+															height={50}
+															style={{ width: "100%", height: "100%", objectFit: "cover" }}
+														/>
+													</Box>
+												) : (
+													<Box
+														w="50px"
+														h="50px"
+														borderRadius="full"
+														bg="yellow.400"
+														display="flex"
+														alignItems="center"
+														justifyContent="center"
+														fontWeight="bold"
+														color="black"
+													>
+														{review.authorName.charAt(0).toUpperCase()}
+													</Box>
+												)}
+												<VStack align="start" spacing={1}>
+													<Text fontWeight="600" color="white">
+														{review.authorName}
+													</Text>
+													<HStack spacing={1}>
+														{Array.from({ length: 5 }).map((_, i) => (
+															<Icon
+																key={i}
+																as={i < review.rating ? AiFillStar : AiOutlineStar}
+																color={i < review.rating ? "yellow.400" : "gray.600"}
+																boxSize={4}
+															/>
+														))}
+													</HStack>
+												</VStack>
+											</HStack>
+											<Text color="gray.300" fontSize="sm" lineHeight="1.6" fontStyle="italic">
+												"{review.text}"
+											</Text>
+											{review.createdAt && (
+												<Text color="gray.500" fontSize="xs">
+													{formatDate(review.createdAt)}
+												</Text>
+											)}
+										</VStack>
+									</Card>
+								))}
+							/>
+						</Box>
 					) : (
 						<Box 
 							w="100%" 
@@ -1629,6 +1842,308 @@ const GoogleReviewsSection: React.FC = () => {
 	);
 };
 
+const BookingSection = () => {
+	return (
+		<Box id="booking" py={{ base: 16, md: 24 }} bg="black">
+			<Container maxW="container.xl" px={{ base: 4, md: 8 }}>
+				<VStack spacing={{ base: 8, md: 10 }}>
+					<motion.div
+						initial={{ opacity: 0, y: 30 }}
+						whileInView={{ opacity: 1, y: 0 }}
+						viewport={{ once: true }}
+						transition={{ duration: 0.6 }}
+						style={{ width: "100%" }}
+					>
+						<Text
+							fontSize={{ base: "xs", md: "sm" }}
+							color="gray.500"
+							letterSpacing={{ base: "0.15em", md: "0.2em" }}
+							textTransform="uppercase"
+							textAlign="center"
+							mb={{ base: 3, md: 4 }}
+						>
+							Booking ponuda
+						</Text>
+						<Heading
+							as="h2"
+							fontSize={{ base: "3xl", sm: "4xl", md: "5xl", lg: "6xl" }}
+							fontWeight="300"
+							letterSpacing={{ base: "-0.01em", md: "-0.02em" }}
+							textAlign="center"
+							color="white"
+							px={{ base: 2, md: 0 }}
+						>
+							Belgrade River House na Booking.com
+						</Heading>
+					</motion.div>
+
+					<SimpleGrid columns={{ base: 1, md: 2 }} spacing={{ base: 6, md: 8 }} w="100%">
+						<Card bg="gray.900" borderWidth="1px" borderColor="gray.800" borderRadius="none" p={{ base: 6, md: 8 }}>
+							<VStack align="flex-start" spacing={4}>
+								<Heading as="h3" fontSize={{ base: "xl", md: "2xl" }} color="white" fontWeight="400">
+									Zašto rezervisati preko Booking-a?
+								</Heading>
+								<Text color="gray.300" fontSize={{ base: "sm", md: "md" }} lineHeight="1.7">
+									Naš zvanični Booking.com oglas pruža transparentan uvid u cene, dostupnost i utiske gostiju, uz sigurnu i
+									brzu rezervaciju. Idealno za sve koji žele instant potvrdu i podršku 24/7.
+								</Text>
+								<VStack align="stretch" spacing={3} w="100%">
+									<HStack spacing={3} align="flex-start">
+										<Icon as={FiStar} color="yellow.400" boxSize={5} mt={1} />
+										<Text color="gray.300" fontSize={{ base: "sm", md: "md" }} lineHeight="1.6">
+											Autentične ocene i komentari potvrđenih gostiju.
+										</Text>
+									</HStack>
+									<HStack spacing={3} align="flex-start">
+										<Icon as={FiHome} color="yellow.400" boxSize={5} mt={1} />
+										<Text color="gray.300" fontSize={{ base: "sm", md: "md" }} lineHeight="1.6">
+											Precizne informacije o sadržajima vile i sezonskim pogodnostima.
+										</Text>
+									</HStack>
+								</VStack>
+							</VStack>
+						</Card>
+						<Card bg="gray.900" borderWidth="1px" borderColor="gray.800" borderRadius="none" p={{ base: 6, md: 8 }}>
+							<VStack align="flex-start" spacing={4}>
+								<Heading as="h3" fontSize={{ base: "xl", md: "2xl" }} color="white" fontWeight="400">
+									Adresa i lokacija
+								</Heading>
+								<Text color="gray.300" fontSize={{ base: "sm", md: "md" }} lineHeight="1.7">
+									Belgrade River House se nalazi u mirnom delu Palilule, na adresi Zapadnomoravska 46a – savršena pozicija
+									uz reku, svega nekoliko minuta od centra Beograda.
+								</Text>
+								<Box w="100%" borderLeft="3px solid" borderColor="yellow.400" bg="gray.800" p={{ base: 4, md: 5 }}>
+									<HStack spacing={3} align="flex-start">
+										<Icon as={FiMapPin} color="yellow.400" boxSize={5} mt={1} />
+										<VStack align="flex-start" spacing={1} w="100%">
+											<Text color="white" fontSize={{ base: "md", md: "lg" }} fontWeight="500">
+												Zapadnomoravska 46a, Palilula
+											</Text>
+											<Text color="gray.300" fontSize={{ base: "sm", md: "md" }}>
+												Privatni prilaz, parking i terasa na samoj obali pružaju ekskluzivno iskustvo boravka.
+											</Text>
+										</VStack>
+									</HStack>
+								</Box>
+							</VStack>
+						</Card>
+					</SimpleGrid>
+
+					<Button
+						as="a"
+						href="https://www.booking.com/hotel/rs/belgrade-river-house.sr.html?aid=356980&label=gog235jc-10CAsowQFCFGJlbGdyYWRlLXJpdmVyLWhvdXNlSCRYA2jBAYgBAZgBM7gBF8gBDNgBA-gBAfgBAYgCAagCAbgCldLbyAbAAgHSAiQ1ZWJhYjNlMy03NmVkLTQ5ZjAtOTA0OS01ZjViYTc0OTdjMzLYAgHgAgE&sid=8b17b64546e8e62162533a4a6ef0474a&age=5&age=7&dest_id=-74897&dest_type=city&dist=0&group_adults=2&group_children=2&hapos=1&hpos=1&no_rooms=1&req_adults=2&req_age=5&req_age=7&req_children=2&room1=A%2CA%2C5%2C7&sb_price_type=total&sr_order=popularity&srepoch=1763109148&srpvid=60e33c0ba552016c&type=total&ucfs=1&"
+						target="_blank"
+						rel="noopener noreferrer"
+						size="lg"
+						w={{ base: "100%", md: "auto" }}
+						px={{ base: 10, md: 12 }}
+						py={{ base: 6, md: 7 }}
+						fontSize={{ base: "md", md: "lg" }}
+						fontWeight="500"
+						borderRadius="none"
+						bg="white"
+						color="black"
+						textTransform="uppercase"
+						rightIcon={<FiArrowRight />}
+						_hover={{ bg: "gray.100", transform: "translateY(-2px)" }}
+						transition="all 0.3s ease"
+					>
+						Otvori Booking ponudu
+					</Button>
+				</VStack>
+			</Container>
+		</Box>
+	);
+};
+
+const INSTAGRAM_FALLBACK_IMAGES = [
+	"https://res.cloudinary.com/dvohrn0zf/image/upload/v1762958941/river-house-belgrade/sfe2udeyuprvxhrvnoc5.jpg",
+];
+
+const InstagramSection: React.FC<{ images: string[] }> = ({ images }) => {
+	const slides = useMemo(() => {
+		return images && images.length > 0 ? images : INSTAGRAM_FALLBACK_IMAGES;
+	}, [images]);
+	const [activeIndex, setActiveIndex] = useState(0);
+
+	useEffect(() => {
+		setActiveIndex(0);
+	}, [slides]);
+
+	useEffect(() => {
+		if (slides.length <= 1) return;
+		const interval = setInterval(() => {
+			setActiveIndex((prev) => (prev + 1) % slides.length);
+		}, 3000);
+		return () => clearInterval(interval);
+	}, [slides]);
+
+	const currentImage = slides[activeIndex] || slides[0];
+
+	return (
+		<Box id="instagram" py={{ base: 16, md: 24 }} bg="black">
+			<Container maxW="container.xl" px={{ base: 4, md: 8 }}>
+				<VStack spacing={{ base: 8, md: 12 }}>
+					<motion.div
+						initial={{ opacity: 0, y: 25 }}
+						whileInView={{ opacity: 1, y: 0 }}
+						viewport={{ once: true }}
+						transition={{ duration: 0.6 }}
+						style={{ width: "100%" }}
+					>
+						<Text
+							fontSize={{ base: "xs", md: "sm" }}
+							color="gray.500"
+							letterSpacing={{ base: "0.15em", md: "0.2em" }}
+							textTransform="uppercase"
+							textAlign="center"
+							mb={{ base: 3, md: 4 }}
+						>
+							Instagram
+						</Text>
+						<Heading
+							as="h2"
+							fontSize={{ base: "3xl", sm: "4xl", md: "5xl", lg: "6xl" }}
+							fontWeight="300"
+							textAlign="center"
+							color="white"
+							px={{ base: 2, md: 0 }}
+						>
+							Živi tok sa reke
+						</Heading>
+						<Text
+							textAlign="center"
+							color="gray.400"
+							fontSize={{ base: "md", md: "lg" }}
+							mt={4}
+							maxW="720px"
+							mx="auto"
+						>
+							Pogledaj najnovije trenutke sa terase, bazena i rečne obale. Instagram feed beleži svaku zoru i glamurozno veče na vodi.
+						</Text>
+					</motion.div>
+
+					<SimpleGrid columns={{ base: 1, lg: 2 }} spacing={{ base: 6, lg: 10 }} w="100%" alignItems="stretch">
+						<Card bg="gray.900" borderWidth="1px" borderColor="gray.800" borderRadius="xl" p={{ base: 6, md: 8 }}>
+							<VStack align="flex-start" spacing={{ base: 4, md: 6 }}>
+								<Tag colorScheme="yellow" size="lg" borderRadius="full">
+									@belgraderiverhouse
+								</Tag>
+								<Heading as="h3" fontSize={{ base: "2xl", md: "3xl" }} fontWeight="400" color="white">
+									Podeli svoj river vibe
+								</Heading>
+								<Text color="gray.300" fontSize={{ base: "sm", md: "md" }} lineHeight="1.8">
+									Instagram profil otkriva realne prizore – od prvog gutljaja espresso kafe na pontonu do večernjeg šampanjca uz gradsku panoramu.
+								</Text>
+								<VStack align="stretch" spacing={3}>
+									{[
+										"Rezne priče u Stories formatu: iza kulisa pripreme bazena i privatnih događaja.",
+										"Carousel objave sa detaljima enterijera i novih setup-a za proslave.",
+										"Reels klipovi koji hvataju vibe noćenja na vodi.",
+									].map((item, idx) => (
+										<HStack key={idx} spacing={3} align="flex-start">
+											<Icon as={FiStar} color="yellow.400" mt={1} />
+											<Text color="gray.300" fontSize={{ base: "sm", md: "md" }} lineHeight="1.6">
+												{item}
+											</Text>
+										</HStack>
+									))}
+								</VStack>
+								<Button
+									as="a"
+									href="https://www.instagram.com/belgrade.river.house/?igsh=cHk2Nnhsa3AyZDg0#"
+									target="_blank"
+									rel="noopener noreferrer"
+									size="lg"
+									borderRadius="none"
+									bg="white"
+									color="black"
+									textTransform="uppercase"
+									rightIcon={<FiArrowRight />}
+									px={{ base: 8, md: 10 }}
+									py={{ base: 5, md: 6 }}
+									_hover={{ bg: "gray.100", transform: "translateY(-2px)" }}
+								>
+									Prati na Instagramu
+								</Button>
+							</VStack>
+						</Card>
+
+						<Card
+							bg="black"
+							borderWidth="1px"
+							borderColor="gray.800"
+							borderRadius="xl"
+							overflow="hidden"
+							position="relative"
+							p={0}
+							minH={{ base: "320px", md: "420px" }}
+						>
+							<Box position="relative" w="100%" h="100%">
+								<AnimatePresence mode="wait">
+									<motion.div
+										key={currentImage}
+										initial={{ opacity: 0, scale: 1.03 }}
+										animate={{ opacity: 1, scale: 1 }}
+										exit={{ opacity: 0, scale: 0.97 }}
+										transition={{ duration: 0.6, ease: "easeInOut" }}
+										style={{ width: "100%", height: "100%" }}
+									>
+										<SafeImage
+											src={currentImage}
+											alt="Instagram Belgrade River House"
+											width={900}
+											height={900}
+											style={{ width: "100%", height: "100%", objectFit: "cover" }}
+										/>
+									</motion.div>
+								</AnimatePresence>
+								<Box
+									position="absolute"
+									inset={0}
+									bg="linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,0.85) 100%)"
+								/>
+								<VStack
+									position="absolute"
+									bottom={0}
+									left={0}
+									right={0}
+									p={{ base: 4, md: 6 }}
+									align="flex-start"
+									spacing={2}
+								>
+									<Text fontSize={{ base: "lg", md: "xl" }} fontWeight="500">
+										River House trenutak
+									</Text>
+									<Text fontSize={{ base: "sm", md: "md" }} color="gray.200" lineHeight="1.6">
+										Zaprati profil i uhvati prve informacije o event setup-ovima, dekor update-ima i river brunch izdanjima.
+									</Text>
+									{slides.length > 1 && (
+										<HStack spacing={2} pt={2}>
+											{slides.map((_, idx) => (
+												<Box
+													key={idx}
+													w={activeIndex === idx ? "20px" : "8px"}
+													h="8px"
+													bg={activeIndex === idx ? "yellow.400" : "gray.500"}
+													borderRadius="full"
+													cursor="pointer"
+													onClick={() => setActiveIndex(idx)}
+													transition="all 0.2s"
+												/>
+											))}
+										</HStack>
+									)}
+								</VStack>
+							</Box>
+						</Card>
+					</SimpleGrid>
+				</VStack>
+			</Container>
+		</Box>
+	);
+};
+
 const RegistrationSection: React.FC = () => {
 	const [fullName, setFullName] = useState("");
 	const [email, setEmail] = useState("");
@@ -1682,7 +2197,7 @@ const RegistrationSection: React.FC = () => {
 								letterSpacing={{ base: "0.15em", md: "0.2em" }}
 								textTransform="uppercase"
 							>
-								Kontakt
+								Rezervacije
 							</Text>
 							<Heading
 								as="h2"

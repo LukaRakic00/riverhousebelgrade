@@ -12,7 +12,7 @@ export interface LogoProps {
 }
 
 export const Logo = ({ href = '/', onClick }: LogoProps) => {
-  const logoUrl = 'https://res.cloudinary.com/dvohrn0zf/image/upload/v1762935030/s25-removebg-preview_yquban.png'
+  const logoUrl = '/static/favicons/s25-removebg-preview.png'
   
   const logo = (
     <Image

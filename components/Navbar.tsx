@@ -11,7 +11,7 @@ export function Navbar() {
 			<div className="container">
 				<Link href="/" className="navbar-brand d-flex align-items-center gap-2">
 					<Image
-						src="https://res.cloudinary.com/dvohrn0zf/image/upload/v1762935030/s25-removebg-preview_yquban.png"
+						src="/static/favicons/s25-removebg-preview.png"
 						alt="Belgrade River House"
 						width={40}
 						height={40}

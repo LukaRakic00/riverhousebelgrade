@@ -60,7 +60,7 @@ export default function AdminLoginPage() {
 		}
 	};
 
-	const logoUrl = 'https://res.cloudinary.com/dvohrn0zf/image/upload/v1762935030/s25-removebg-preview_yquban.png';
+	const logoUrl = "/static/favicons/s25-removebg-preview.png";
 
 	return (
 		<Box minH="100vh" bg="gray.50" _dark={{ bg: "gray.900" }} display="flex" alignItems="center" justifyContent="center" py={12}>

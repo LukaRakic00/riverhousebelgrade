@@ -48,6 +48,7 @@ export const runtime = "nodejs";
 type SiteConfig = {
 	heroImageUrl: string;
 	featuredImages: string[];
+	instagramImages: string[];
 };
 
 type Category = {
@@ -56,6 +57,15 @@ type Category = {
 	description?: string;
 	imageUrls: string[];
 	order: number;
+};
+
+type AdminReview = {
+	_id: string;
+	authorName: string;
+	rating: number;
+	text: string;
+	imageUrl?: string;
+	createdAt?: string;
 };
 
 
@@ -67,6 +77,8 @@ export default function AdminPage() {
 	const [config, setConfig] = useState<SiteConfig | null>(null);
 	const [heroUrlEdit, setHeroUrlEdit] = useState<string>("");
 	const [featuredEdits, setFeaturedEdits] = useState<string[]>([]);
+	const [instagramEdits, setInstagramEdits] = useState<string[]>([]);
+	const [newInstagramUrl, setNewInstagramUrl] = useState<string>("");
 
 	// Categories state
 	const [categories, setCategories] = useState<Category[]>([]);
@@ -75,6 +87,9 @@ export default function AdminPage() {
 	const [newCategoryName, setNewCategoryName] = useState("");
 	const [newCategoryDesc, setNewCategoryDesc] = useState("");
 	const [categoryImages, setCategoryImages] = useState<string[]>([]);
+	const [reviews, setReviews] = useState<AdminReview[]>([]);
+	const [reviewsLoading, setReviewsLoading] = useState(false);
+	const [deletingReviewId, setDeletingReviewId] = useState<string | null>(null);
 
 
 	const [cloudFolder, setCloudFolder] = useState<string>("river-house-belgrade");
@@ -86,6 +101,52 @@ export default function AdminPage() {
 	const [uploadProgress, setUploadProgress] = useState(0);
 	const [deletingImage, setDeletingImage] = useState<string | null>(null);
 
+	const selectedUrls = useMemo(() => Object.keys(selected).filter((u) => selected[u]), [selected]);
+
+	const addToastInfo = (description: string) => toast({ title: "Info", description, status: "info" });
+
+	const handleAddSelectedToFeatured = () => {
+		if (selectedUrls.length === 0) {
+			addToastInfo("Najpre izaberi slike iz Cloudinary liste.");
+			return;
+		}
+		if (featuredEdits.length >= 6) {
+			toast({ title: "Limit", description: "Maksimalno 6 udarnih slika.", status: "warning" });
+			return;
+		}
+		const filtered = selectedUrls.filter((url) => !featuredEdits.includes(url));
+		if (filtered.length === 0) {
+			addToastInfo("Sve izabrane slike su već dodate.");
+			return;
+		}
+		const merged = [...featuredEdits, ...filtered].slice(0, 6);
+		const diff = merged.length - featuredEdits.length;
+		setFeaturedEdits(merged);
+		setSelected({});
+		toast({ title: "Dodato", description: `${diff} slika dodato u udarne.`, status: "success" });
+	};
+
+	const handleAddSelectedToInstagram = () => {
+		if (selectedUrls.length === 0) {
+			addToastInfo("Najpre izaberi slike iz Cloudinary liste.");
+			return;
+		}
+		if (instagramEdits.length >= 8) {
+			toast({ title: "Limit", description: "Maksimalno 8 Instagram slika.", status: "warning" });
+			return;
+		}
+		const filtered = selectedUrls.filter((url) => !instagramEdits.includes(url));
+		if (filtered.length === 0) {
+			addToastInfo("Sve izabrane slike su već dodate.");
+			return;
+		}
+		const merged = [...instagramEdits, ...filtered].slice(0, 8);
+		const diff = merged.length - instagramEdits.length;
+		setInstagramEdits(merged);
+		setSelected({});
+		toast({ title: "Dodato", description: `${diff} slika dodato u Instagram rotaciju.`, status: "success" });
+	};
+
 	useEffect(() => {
 		const load = async () => {
 			const res = await fetch("/api/images", { cache: "no-store" });
@@ -93,9 +154,11 @@ export default function AdminPage() {
 			setConfig(data);
 			setHeroUrlEdit(data.heroImageUrl || "");
 			setFeaturedEdits(data.featuredImages || []);
+			setInstagramEdits(data.instagramImages || []);
 		};
 		load();
 		loadCategories();
+		loadReviews();
 	}, []);
 
 	const loadCategories = async () => {
@@ -108,6 +171,37 @@ export default function AdminPage() {
 			toast({ title: "Greška", description: e?.message || "Greška pri učitavanju kategorija", status: "error" });
 		} finally {
 			setCategoriesLoading(false);
+		}
+	};
+
+	const loadReviews = async () => {
+		setReviewsLoading(true);
+		try {
+			const res = await fetch("/api/reviews", { cache: "no-store" });
+			const data = await res.json();
+			setReviews(Array.isArray(data) ? data : []);
+		} catch (e: any) {
+			toast({ title: "Greška", description: e?.message || "Greška pri učitavanju recenzija", status: "error" });
+		} finally {
+			setReviewsLoading(false);
+		}
+	};
+
+	const handleDeleteReview = async (id: string) => {
+		if (!confirm("Da li si siguran da želiš da obrišeš ovu recenziju?")) return;
+		setDeletingReviewId(id);
+		try {
+			const res = await fetch(`/api/reviews?id=${id}`, { method: "DELETE" });
+			if (!res.ok) {
+				const err = await res.json().catch(() => ({}));
+				throw new Error(err?.error || "Greška pri brisanju recenzije");
+			}
+			toast({ title: "Obrisano", status: "success", description: "Recenzija je uklonjena." });
+			await loadReviews();
+		} catch (e: any) {
+			toast({ title: "Greška", description: e?.message || "Greška pri brisanju recenzije", status: "error" });
+		} finally {
+			setDeletingReviewId(null);
 		}
 	};
 
@@ -125,6 +219,7 @@ export default function AdminPage() {
 		setConfig(data);
 		setHeroUrlEdit(data.heroImageUrl || "");
 		setFeaturedEdits(data.featuredImages || []);
+		setInstagramEdits(data.instagramImages || []);
 		toast({ title: "Sačuvano", status: "success", description: "Promene su uspešno sačuvane u bazu podataka." });
 		} catch (e: any) {
 			toast({ title: "Greška", description: e?.message, status: "error" });
@@ -239,10 +334,7 @@ export default function AdminPage() {
 		}
 	};
 
-	const selectedUrls = useMemo(() => Object.keys(selected).filter((u) => selected[u]), [selected]);
-
-
-	const logoUrl = 'https://res.cloudinary.com/dvohrn0zf/image/upload/v1762935030/s25-removebg-preview_yquban.png';
+	const logoUrl = "/static/favicons/s25-removebg-preview.png";
 
 	return (
 		<Box minH="100vh" bg="gray.50" _dark={{ bg: "gray.900" }} pt={{ base: 24, md: 32 }} pb={8}>
@@ -347,7 +439,7 @@ export default function AdminPage() {
 									colorScheme="purple"
 									leftIcon={<FiSave />}
 									isLoading={loading}
-									onClick={() => config && saveConfig({ ...config, heroImageUrl: heroUrlEdit })}
+									onClick={() => config && saveConfig({ ...config, heroImageUrl: heroUrlEdit, instagramImages: instagramEdits })}
 									borderRadius="md"
 									w="100%"
 								>
@@ -492,16 +584,21 @@ export default function AdminPage() {
 														size="sm"
 														colorScheme="orange"
 														leftIcon={<FiCheck />}
-														onClick={() => {
-															const newFeatured = [...featuredEdits, ...selectedUrls].slice(0, 6);
-															setFeaturedEdits(newFeatured);
-															setSelected({});
-															toast({ title: "Dodato", description: `${newFeatured.length - featuredEdits.length} slika dodato u udarne slike`, status: "success" });
-														}}
+														onClick={handleAddSelectedToFeatured}
 														isDisabled={featuredEdits.length >= 6}
 														borderRadius="md"
 													>
 														Dodaj u udarne slike ({selectedUrls.length})
+													</Button>
+													<Button
+														size="sm"
+														colorScheme="pink"
+														leftIcon={<FiCheck />}
+														onClick={handleAddSelectedToInstagram}
+														isDisabled={instagramEdits.length >= 8}
+														borderRadius="md"
+													>
+														Dodaj u Instagram ({selectedUrls.length})
 													</Button>
 													<Button
 														size="sm"
@@ -653,6 +750,32 @@ export default function AdminPage() {
 											<Box position="absolute" top="2" left="2" zIndex={2}>
 												<Badge colorScheme="orange">{idx + 1}</Badge>
 										</Box>
+											<VStack position="absolute" top="2" right="2" spacing={1} zIndex={2}>
+												<IconButton
+													size="xs"
+													aria-label="Pomeri gore"
+													icon={<FiArrowUp />}
+													isDisabled={idx === 0}
+													onClick={() => {
+														if (idx === 0) return;
+														const next = [...featuredEdits];
+														[next[idx - 1], next[idx]] = [next[idx], next[idx - 1]];
+														setFeaturedEdits(next);
+													}}
+												/>
+												<IconButton
+													size="xs"
+													aria-label="Pomeri dole"
+													icon={<FiArrowDown />}
+													isDisabled={idx === featuredEdits.length - 1}
+													onClick={() => {
+														if (idx === featuredEdits.length - 1) return;
+														const next = [...featuredEdits];
+														[next[idx + 1], next[idx]] = [next[idx], next[idx + 1]];
+														setFeaturedEdits(next);
+													}}
+												/>
+											</VStack>
 											<SafeImage
 												src={u}
 												alt={`Featured ${idx + 1}`}
@@ -689,17 +812,8 @@ export default function AdminPage() {
 								<Button
 									colorScheme="orange"
 									leftIcon={<FiCheck />}
-									onClick={() => {
-										if (selectedUrls.length === 0) {
-											toast({ title: "Greška", description: "Izaberite slike iz Cloudinary pregleda", status: "warning" });
-											return;
-										}
-										const newFeatured = [...featuredEdits, ...selectedUrls].slice(0, 6);
-										setFeaturedEdits(newFeatured);
-										setSelected({});
-										toast({ title: "Dodato", description: `${newFeatured.length - featuredEdits.length} slika dodato u udarne slike`, status: "success" });
-									}}
-									isDisabled={selectedUrls.length === 0 || featuredEdits.length >= 6}
+									onClick={handleAddSelectedToFeatured}
+									isDisabled={featuredEdits.length >= 6}
 									borderRadius="md"
 								>
 									Dodaj selektovane u udarne slike ({selectedUrls.length})
@@ -720,7 +834,15 @@ export default function AdminPage() {
 								colorScheme="orange"
 								leftIcon={<FiSave />}
 								isLoading={loading}
-								onClick={() => config && saveConfig({ ...config, heroImageUrl: heroUrlEdit, featuredImages: featuredEdits })}
+								onClick={() =>
+									config &&
+									saveConfig({
+										...config,
+										heroImageUrl: heroUrlEdit,
+										featuredImages: featuredEdits,
+										instagramImages: instagramEdits,
+									})
+								}
 								borderRadius="md"
 								size="lg"
 								w="100%"
@@ -728,6 +850,170 @@ export default function AdminPage() {
 								Sačuvaj udarne slike
 							</Button>
 					</Stack>
+						</AccordionPanel>
+					</AccordionItem>
+
+					{/* Instagram feed slike */}
+					<AccordionItem mb={6} borderRadius="xl" overflow="hidden" boxShadow="lg" bg="white" _dark={{ bg: "gray.800" }}>
+						<AccordionButton
+							bg="pink.50"
+							_dark={{ bg: "pink.900" }}
+							py={4}
+							px={6}
+							_hover={{ bg: "pink.100", _dark: { bg: "pink.800" } }}
+						>
+							<Box flex="1" textAlign="left">
+								<Flex justify="space-between" align="center" flexWrap="wrap" gap={4} w="100%">
+									<Heading size="md" color="pink.700" _dark={{ color: "pink.200" }}>
+										Instagram feed slike (rotacija, max 8)
+									</Heading>
+									<Badge colorScheme="pink" fontSize="md" px={3} py={1} borderRadius="full">
+										{instagramEdits.length} / 8 slika
+									</Badge>
+								</Flex>
+							</Box>
+							<AccordionIcon />
+						</AccordionButton>
+						<AccordionPanel pb={6} px={6}>
+							<Stack spacing={6}>
+								<Alert status="info" borderRadius="md">
+									<AlertIcon />
+									<AlertDescription>
+										Slike u ovoj sekciji rotiraju se na landing stranici (Instagram blok) na svakih 5 sekundi.
+									</AlertDescription>
+								</Alert>
+
+								{instagramEdits.length === 0 ? (
+									<Box textAlign="center" py={10} color="gray.500">
+										<Icon as={FiImage} boxSize={14} mb={4} />
+										<Text fontSize="lg">Još uvek nema Instagram slika</Text>
+										<Text fontSize="sm" mt={2}>
+											Izaberi slike iz Cloudinary pregleda iznad i dodaj ih ovde.
+										</Text>
+									</Box>
+								) : (
+									<SimpleGrid columns={{ base: 2, md: 4 }} spacing={4}>
+										{instagramEdits.map((url, idx) => (
+											<Box
+												key={idx}
+												borderWidth="2px"
+												borderColor="pink.300"
+												borderRadius="lg"
+												overflow="hidden"
+												bg="white"
+												_dark={{ bg: "gray.900" }}
+												position="relative"
+											>
+												<Box position="absolute" top="2" left="2" zIndex={2}>
+													<Badge colorScheme="pink">{idx + 1}</Badge>
+												</Box>
+												<SafeImage src={url} alt={`Instagram ${idx + 1}`} width={400} height={400} style={{ width: "100%", height: "auto" }} />
+												<Button
+													w="100%"
+													size="sm"
+													variant="ghost"
+													leftIcon={<FiTrash />}
+													onClick={() => setInstagramEdits((prev) => prev.filter((_, i) => i !== idx))}
+													colorScheme="red"
+													borderRadius="none"
+												>
+													Ukloni
+												</Button>
+											</Box>
+										))}
+									</SimpleGrid>
+								)}
+
+								<Divider />
+
+								<Alert status="info" borderRadius="md">
+									<AlertIcon />
+									<AlertDescription>
+										Selektuj slike iz Cloudinary liste iznad i klikni na dugme ispod da ih dodaš u Instagram rotaciju.
+									</AlertDescription>
+								</Alert>
+
+								<HStack spacing={3} flexWrap="wrap">
+									<Button
+										colorScheme="pink"
+										leftIcon={<FiCheck />}
+										onClick={handleAddSelectedToInstagram}
+										isDisabled={instagramEdits.length >= 8}
+										borderRadius="md"
+									>
+										Dodaj selektovane u Instagram ({selectedUrls.length})
+									</Button>
+									{instagramEdits.length > 0 && (
+										<Button variant="outline" onClick={() => setInstagramEdits([])} borderRadius="md">
+											Obriši sve
+										</Button>
+									)}
+									<Button variant="ghost" leftIcon={<FiRefreshCw />} onClick={() => setSelected({})}>
+										Očisti selekciju
+									</Button>
+								</HStack>
+
+								<Card variant="outline" p={4}>
+									<VStack align="stretch" spacing={3}>
+										<Text fontWeight="semibold">Dodaj direktan URL</Text>
+										<InputGroup>
+											<InputLeftElement pointerEvents="none">
+												<Icon as={FiImage} color="gray.400" />
+											</InputLeftElement>
+											<Input
+												placeholder="https://res.cloudinary.com/..."
+												value={newInstagramUrl}
+												onChange={(e) => setNewInstagramUrl(e.target.value)}
+												borderRadius="md"
+											/>
+										</InputGroup>
+										<Button
+											colorScheme="pink"
+											variant="solid"
+											leftIcon={<FiPlus />}
+											onClick={() => {
+												if (!newInstagramUrl) {
+													toast({ title: "Info", description: "Unesi validan URL slike.", status: "info" });
+													return;
+												}
+												if (instagramEdits.length >= 8) {
+													toast({ title: "Limit", description: "Maksimalno 8 slika u rotaciji.", status: "warning" });
+													return;
+												}
+												if (instagramEdits.includes(newInstagramUrl)) {
+													toast({ title: "Info", description: "Ova slika je već dodata.", status: "info" });
+													return;
+												}
+												setInstagramEdits((prev) => [...prev, newInstagramUrl]);
+												setNewInstagramUrl("");
+												toast({ title: "Dodato", status: "success" });
+											}}
+										>
+											Dodaj URL
+										</Button>
+									</VStack>
+								</Card>
+
+								<Button
+									colorScheme="pink"
+									leftIcon={<FiSave />}
+									isLoading={loading}
+									onClick={() =>
+										config &&
+										saveConfig({
+											...config,
+											heroImageUrl: heroUrlEdit,
+											featuredImages: featuredEdits,
+											instagramImages: instagramEdits,
+										})
+									}
+									borderRadius="md"
+									size="lg"
+									w="100%"
+								>
+									Sačuvaj Instagram rotaciju
+								</Button>
+							</Stack>
 						</AccordionPanel>
 					</AccordionItem>
 
@@ -1152,6 +1438,81 @@ export default function AdminPage() {
 								</Card>
 							)}
 						</Stack>
+						</AccordionPanel>
+					</AccordionItem>
+					{/* Recenzije */}
+					<AccordionItem mb={6} borderRadius="xl" overflow="hidden" boxShadow="lg" bg="white" _dark={{ bg: "gray.800" }}>
+						<AccordionButton
+							bg="yellow.50"
+							_dark={{ bg: "yellow.900" }}
+							py={4}
+							px={6}
+							_hover={{ bg: "yellow.100", _dark: { bg: "yellow.800" } }}
+						>
+							<Box flex="1" textAlign="left">
+								<Flex justify="space-between" align="center" flexWrap="wrap" gap={4} w="100%">
+									<Heading size="md" color="yellow.700" _dark={{ color: "yellow.200" }}>
+										Recenzije
+									</Heading>
+									<Badge colorScheme="yellow" fontSize="md" px={3} py={1} borderRadius="full">
+										{reviews.length}
+									</Badge>
+								</Flex>
+							</Box>
+							<AccordionIcon />
+						</AccordionButton>
+						<AccordionPanel pb={6} px={6}>
+							<Stack spacing={6}>
+								<HStack justify="space-between" flexWrap="wrap" spacing={4}>
+									<Text color="gray.500" _dark={{ color: "gray.400" }}>
+										Upravljaj recenzijama – brisanje je dostupno, tekst se ne edituje.
+									</Text>
+									<Button leftIcon={<FiRefreshCw />} variant="outline" onClick={loadReviews} isLoading={reviewsLoading}>
+										Osvježi recenzije
+									</Button>
+								</HStack>
+								{reviewsLoading ? (
+									<Flex justify="center" py={10}>
+										<Spinner size="lg" color="yellow.500" />
+									</Flex>
+								) : reviews.length === 0 ? (
+									<Box textAlign="center" py={8} color="gray.500">
+										<Text fontSize="md">Trenutno nema recenzija.</Text>
+									</Box>
+								) : (
+									<Stack spacing={4}>
+										{reviews.map((review) => (
+											<Card key={review._id} variant="outline" p={{ base: 4, md: 5 }}>
+												<Flex justify="space-between" align="flex-start" gap={4} flexDir={{ base: "column", md: "row" }}>
+													<VStack align="flex-start" spacing={2} flex="1">
+														<HStack spacing={3}>
+															<Text fontWeight="600">{review.authorName}</Text>
+															<Badge colorScheme="yellow">Ocena {review.rating}/5</Badge>
+														</HStack>
+														<Text fontSize="sm" color="gray.600" _dark={{ color: "gray.300" }} lineHeight="1.6">
+															{review.text}
+														</Text>
+														{review.createdAt && (
+															<Text fontSize="xs" color="gray.500">
+																{new Date(review.createdAt).toLocaleDateString("sr-RS")}
+															</Text>
+														)}
+													</VStack>
+													<Button
+														leftIcon={<FiTrash />}
+														colorScheme="red"
+														variant="outline"
+														onClick={() => handleDeleteReview(review._id)}
+														isLoading={deletingReviewId === review._id}
+													>
+														Obriši
+													</Button>
+												</Flex>
+											</Card>
+										))}
+									</Stack>
+								)}
+							</Stack>
 						</AccordionPanel>
 					</AccordionItem>
 				</Accordion>

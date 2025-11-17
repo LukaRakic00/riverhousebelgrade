@@ -1,7 +1,7 @@
 "use client";
 
 import Image, { ImageProps } from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Box } from "@chakra-ui/react";
 
 // Koristimo PNG fallback umesto SVG-a jer Next.js Image ne podržava SVG bez dangerouslyAllowSVG
@@ -9,8 +9,16 @@ const FALLBACK = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' w
 
 export function SafeImage(props: ImageProps) {
 	const { src, alt, onError, ...rest } = props;
-	const [imgSrc, setImgSrc] = useState<string>(typeof src === "string" ? src : (src as any).src || "");
+	const deriveSrc = () => (typeof src === "string" ? src : (src as any)?.src || "");
+	const [imgSrc, setImgSrc] = useState<string>(deriveSrc());
 	const [hasError, setHasError] = useState(false);
+
+	useEffect(() => {
+		const nextSrc = deriveSrc();
+		setImgSrc(nextSrc);
+		setHasError(false);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [src]);
 
 	// Ako nema src ili je došlo do greške, prikaži placeholder
 	if (!imgSrc || hasError) {
