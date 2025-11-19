@@ -52,7 +52,7 @@ export default function GalerijaPage() {
 	}
 
 	return (
-		<Box minH="100vh" bg="black" color="white" py={{ base: 16, md: 32 }}>
+		<Box minH="100vh" bg="black" color="white" py={{ base: 4, md: 32 }} pt={{ base: 28, md: 32 }}>
 			<Container maxW="container.xl" px={{ base: 4, md: 8 }}>
 				<VStack spacing={{ base: 12, md: 16 }}>
 					<motion.div

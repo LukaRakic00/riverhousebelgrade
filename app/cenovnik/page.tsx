@@ -50,7 +50,7 @@ export default function CenovnikPage() {
 	}, []);
 
 	return (
-		<Box bg="black" color="white" minH="100vh" py={{ base: 16, md: 32 }}>
+		<Box bg="black" color="white" minH="100vh" py={{ base: 4, md: 32 }} pt={{ base: 28, md: 32 }}>
 			<Container maxW="container.lg" px={{ base: 4, md: 8 }}>
 				<VStack spacing={{ base: 8, md: 12 }}>
 					{/* Header */}
@@ -80,7 +80,7 @@ export default function CenovnikPage() {
 							px={{ base: 2, md: 0 }}
 							mb={{ base: 4, md: 6 }}
 						>
-							Naše cene
+							Upoznajte našu ponudu
 						</Heading>
 					</motion.div>
 
