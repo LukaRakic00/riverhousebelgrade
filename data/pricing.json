@@ -1,0 +1,28 @@
+{
+  "price": 44997,
+  "description": "Luksuzni boravak sa potpunim wellness iskustvom.",
+  "includedItemsDetails": [
+    {
+      "icon": "🛁",
+      "title": "Privatni Jacuzzi Suite",
+      "description": "Za potpuno opuštanje i intiman wellness doživljaj."
+    },
+    {
+      "icon": "🔥",
+      "title": "Premium Sauna Experience",
+      "description": "Sauna najvišeg kvaliteta, idealna za relaksaciju i detoks."
+    },
+    {
+      "icon": "🏊",
+      "title": "Bazen u sezoni",
+      "description": "Privatni sezonski bazen — savršen za uživanje tokom toplih dana."
+    },
+    {
+      "icon": "🏡",
+      "title": "Ekskluzivni ambijent",
+      "description": "Moderan enterijer, potpuna privatnost i maksimalan komfor."
+    }
+  ],
+  "additionalBenefits": "Wi-Fi • Peškiri • Higijenski set • Parking",
+  "note": "Izdavanje isključivo na dan, bez mogućnosti zakupa po satu."
+}

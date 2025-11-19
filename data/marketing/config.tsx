@@ -24,6 +24,11 @@ const siteConfig = {
         href: '/galerija',
       },
       {
+        id: 'cenovnik',
+        label: 'Cenovnik',
+        href: '/cenovnik',
+      },
+      {
         id: 'kontakt',
         label: 'Kontakt',
       },

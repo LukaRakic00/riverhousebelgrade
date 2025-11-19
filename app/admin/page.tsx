@@ -39,6 +39,7 @@ import {
 	AccordionButton,
 	AccordionPanel,
 	AccordionIcon,
+	Textarea,
 } from "@chakra-ui/react";
 import { FiLogOut, FiRefreshCw, FiSave, FiTrash, FiUpload, FiImage, FiCheck, FiX, FiFolder, FiPlus, FiEdit2, FiArrowUp, FiArrowDown } from "react-icons/fi";
 
@@ -90,6 +91,26 @@ export default function AdminPage() {
 	const [reviews, setReviews] = useState<AdminReview[]>([]);
 	const [reviewsLoading, setReviewsLoading] = useState(false);
 	const [deletingReviewId, setDeletingReviewId] = useState<string | null>(null);
+
+	// Prices state
+	type IncludedItemDetail = { icon: string; title: string; description?: string };
+	type PriceType = { 
+		price: number; 
+		description?: string; 
+		includedItemsDetails?: IncludedItemDetail[];
+		additionalBenefits?: string;
+		note?: string;
+	};
+	const [price, setPrice] = useState<PriceType | null>(null);
+	const [pricesLoading, setPricesLoading] = useState(false);
+	const [newPriceValue, setNewPriceValue] = useState("");
+	const [newPriceDesc, setNewPriceDesc] = useState("");
+	const [newPriceIncludedItemsDetails, setNewPriceIncludedItemsDetails] = useState<IncludedItemDetail[]>([]);
+	const [newIncludedItemIcon, setNewIncludedItemIcon] = useState("");
+	const [newIncludedItemTitle, setNewIncludedItemTitle] = useState("");
+	const [newIncludedItemDesc, setNewIncludedItemDesc] = useState("");
+	const [newPriceAdditionalBenefits, setNewPriceAdditionalBenefits] = useState("");
+	const [newPriceNote, setNewPriceNote] = useState("");
 
 
 	const [cloudFolder, setCloudFolder] = useState<string>("river-house-belgrade");
@@ -159,6 +180,7 @@ export default function AdminPage() {
 		load();
 		loadCategories();
 		loadReviews();
+		loadPrices();
 	}, []);
 
 	const loadCategories = async () => {
@@ -171,6 +193,26 @@ export default function AdminPage() {
 			toast({ title: "Greška", description: e?.message || "Greška pri učitavanju kategorija", status: "error" });
 		} finally {
 			setCategoriesLoading(false);
+		}
+	};
+
+	const loadPrices = async () => {
+		setPricesLoading(true);
+		try {
+			const res = await fetch("/api/pricing", { cache: "no-store" });
+			const data = await res.json();
+			setPrice(data || null);
+			if (data) {
+				setNewPriceValue(data.price?.toString() || "");
+				setNewPriceDesc(data.description || "");
+				setNewPriceIncludedItemsDetails(data.includedItemsDetails || []);
+				setNewPriceAdditionalBenefits(data.additionalBenefits || "");
+				setNewPriceNote(data.note || "");
+			}
+		} catch (e: any) {
+			toast({ title: "Greška", description: e?.message || "Greška pri učitavanju cene", status: "error" });
+		} finally {
+			setPricesLoading(false);
 		}
 	};
 
@@ -1440,6 +1482,276 @@ export default function AdminPage() {
 						</Stack>
 						</AccordionPanel>
 					</AccordionItem>
+
+					{/* Cenovnik */}
+					<AccordionItem mb={6} borderRadius="xl" overflow="hidden" boxShadow="lg" bg="white" _dark={{ bg: "gray.800" }}>
+						<AccordionButton
+							bg="green.50"
+							_dark={{ bg: "green.900" }}
+							py={4}
+							px={6}
+							_hover={{ bg: "green.100", _dark: { bg: "green.800" } }}
+						>
+							<Box flex="1" textAlign="left">
+								<Flex justify="space-between" align="center" flexWrap="wrap" gap={4} w="100%">
+									<Heading size="md" color="green.700" _dark={{ color: "green.200" }}>
+										Cenovnik
+									</Heading>
+									<Badge colorScheme="green" fontSize="md" px={3} py={1} borderRadius="full">
+										{price ? "Postavljena" : "Nije postavljena"}
+									</Badge>
+								</Flex>
+							</Box>
+							<AccordionIcon />
+						</AccordionButton>
+						<AccordionPanel pb={6} px={6}>
+							<Stack spacing={6}>
+								{/* Forma za cenu */}
+								<Card variant="outline" p={4}>
+									<VStack spacing={4} align="stretch">
+										<Heading size="sm">Izmena cene</Heading>
+										
+										<InputGroup>
+											<InputLeftElement pointerEvents="none" color="gray.400">
+												RSD
+											</InputLeftElement>
+											<Input
+												type="number"
+												placeholder="Cena (npr. 44999)"
+												value={newPriceValue}
+												onChange={(e) => setNewPriceValue(e.target.value)}
+												borderRadius="md"
+											/>
+										</InputGroup>
+
+										<Textarea
+											rows={2}
+											placeholder="Opis (npr. Luksuzni boravak sa potpunim wellness iskustvom.)"
+											value={newPriceDesc}
+											onChange={(e) => setNewPriceDesc(e.target.value)}
+											borderRadius="md"
+										/>
+
+										<Divider />
+
+										<Heading size="xs">Šta dobijate u okviru boravka:</Heading>
+										<VStack spacing={3} align="stretch">
+											{newPriceIncludedItemsDetails.map((item, idx) => (
+												<Card key={idx} variant="outline" p={3} bg="gray.50" _dark={{ bg: "gray.800" }}>
+													<HStack spacing={3} align="start">
+														<Text fontSize="2xl" flexShrink={0}>{item.icon}</Text>
+														<VStack align="stretch" spacing={1} flex="1">
+															<Text fontWeight="semibold" fontSize="sm">{item.title}</Text>
+															{item.description && (
+																<Text fontSize="xs" color="gray.600" _dark={{ color: "gray.400" }}>
+																	{item.description}
+																</Text>
+															)}
+														</VStack>
+														<IconButton
+															aria-label="Ukloni"
+															icon={<FiX />}
+															size="sm"
+															variant="ghost"
+															colorScheme="red"
+															onClick={() => setNewPriceIncludedItemsDetails((prev) => prev.filter((_, i) => i !== idx))}
+														/>
+													</HStack>
+												</Card>
+											))}
+											<Card variant="outline" p={3} bg="blue.50" _dark={{ bg: "blue.900" }}>
+												<VStack spacing={2} align="stretch">
+													<HStack spacing={2}>
+														<Input
+															placeholder="Emoji (npr. 🛁)"
+															value={newIncludedItemIcon}
+															onChange={(e) => setNewIncludedItemIcon(e.target.value)}
+															borderRadius="md"
+															size="sm"
+															maxW="100px"
+														/>
+														<Input
+															placeholder="Naslov (npr. Privatni Jacuzzi Suite)"
+															value={newIncludedItemTitle}
+															onChange={(e) => setNewIncludedItemTitle(e.target.value)}
+															borderRadius="md"
+															size="sm"
+															flex="1"
+														/>
+													</HStack>
+													<Input
+														placeholder="Opis (opciono, npr. Za potpuno opuštanje i intiman wellness doživljaj.)"
+														value={newIncludedItemDesc}
+														onChange={(e) => setNewIncludedItemDesc(e.target.value)}
+														borderRadius="md"
+														size="sm"
+													/>
+													<Button
+														size="sm"
+														leftIcon={<FiPlus />}
+														onClick={() => {
+															if (newIncludedItemIcon.trim() && newIncludedItemTitle.trim()) {
+																setNewPriceIncludedItemsDetails((prev) => [...prev, {
+																	icon: newIncludedItemIcon.trim(),
+																	title: newIncludedItemTitle.trim(),
+																	description: newIncludedItemDesc.trim() || undefined,
+																}]);
+																setNewIncludedItemIcon("");
+																setNewIncludedItemTitle("");
+																setNewIncludedItemDesc("");
+															}
+														}}
+														isDisabled={!newIncludedItemIcon.trim() || !newIncludedItemTitle.trim()}
+														borderRadius="md"
+													>
+														Dodaj stavku
+													</Button>
+												</VStack>
+											</Card>
+										</VStack>
+
+										<Divider />
+
+										<Input
+											placeholder="Dodatne pogodnosti (npr. Wi-Fi • Peškiri • Higijenski set • Parking)"
+											value={newPriceAdditionalBenefits}
+											onChange={(e) => setNewPriceAdditionalBenefits(e.target.value)}
+											borderRadius="md"
+										/>
+
+										<Divider />
+
+										<Textarea
+											rows={2}
+											placeholder="Napomena (npr. Izdavanje isključivo na dan, bez mogućnosti zakupa po satu.)"
+											value={newPriceNote}
+											onChange={(e) => setNewPriceNote(e.target.value)}
+											borderRadius="md"
+										/>
+
+										<Button
+											colorScheme="green"
+											leftIcon={<FiSave />}
+											onClick={async () => {
+												if (!newPriceValue.trim()) {
+													toast({ title: "Greška", description: "Cena je obavezna", status: "error" });
+													return;
+												}
+												const priceNum = parseFloat(newPriceValue);
+												if (isNaN(priceNum) || priceNum <= 0) {
+													toast({ title: "Greška", description: "Cena mora biti validan pozitivan broj", status: "error" });
+													return;
+												}
+												try {
+													const body = {
+														price: priceNum,
+														description: newPriceDesc.trim() || "",
+														includedItemsDetails: newPriceIncludedItemsDetails,
+														additionalBenefits: newPriceAdditionalBenefits.trim() || "",
+														note: newPriceNote.trim() || "",
+													};
+													const res = await fetch("/api/pricing", {
+														method: "PUT",
+														headers: { "Content-Type": "application/json" },
+														body: JSON.stringify(body),
+													});
+													if (!res.ok) {
+														const errorData = await res.json().catch(() => ({}));
+														throw new Error(errorData.error || "Greška pri čuvanju cene");
+													}
+													loadPrices();
+													toast({ 
+														title: "Uspešno", 
+														description: "Cena je sačuvana", 
+														status: "success" 
+													});
+												} catch (e: any) {
+													console.error("Save price error:", e);
+													toast({ title: "Greška", description: e?.message || "Greška pri čuvanju cene", status: "error" });
+												}
+											}}
+											borderRadius="md"
+										>
+											Sačuvaj izmene
+										</Button>
+									</VStack>
+								</Card>
+
+								{/* Prikaz trenutne cene */}
+								{pricesLoading ? (
+									<Flex justify="center" py={8}>
+										<Spinner size="lg" color="green.500" />
+									</Flex>
+								) : price ? (
+									<Card variant="outline" p={4} bg="gray.50" _dark={{ bg: "gray.900" }}>
+										<VStack spacing={3} align="stretch">
+											<Heading size="sm">Trenutna cena:</Heading>
+											<Text fontSize="lg" fontWeight="bold">
+												{price.price.toLocaleString("sr-RS")} RSD / dan
+											</Text>
+											{price.description && (
+												<Text fontSize="sm" color="gray.600" _dark={{ color: "gray.400" }}>
+													{price.description}
+												</Text>
+											)}
+											{price.includedItemsDetails && price.includedItemsDetails.length > 0 && (
+												<VStack align="stretch" spacing={3}>
+													<Text fontSize="sm" fontWeight="semibold">Šta dobijate u okviru boravka:</Text>
+													{price.includedItemsDetails.map((item, idx) => (
+														<Box key={idx} bg="white" _dark={{ bg: "gray.800" }} p={3} borderRadius="md" borderWidth="1px">
+															<HStack spacing={3} align="start">
+																<Text fontSize="xl">{item.icon}</Text>
+																<VStack align="start" spacing={0.5} flex="1">
+																	<Text fontWeight="semibold" fontSize="sm">{item.title}</Text>
+																	{item.description && (
+																		<Text fontSize="xs" color="gray.600" _dark={{ color: "gray.400" }}>
+																			{item.description}
+																		</Text>
+																	)}
+																</VStack>
+															</HStack>
+														</Box>
+													))}
+												</VStack>
+											)}
+											{price.additionalBenefits && (
+												<Box bg="gray.100" _dark={{ bg: "gray.800" }} p={3} borderRadius="md">
+													<Text fontSize="sm" fontWeight="semibold" mb={1}>Dodatne pogodnosti:</Text>
+													<Text fontSize="sm" color="gray.700" _dark={{ color: "gray.300" }}>
+														{price.additionalBenefits}
+													</Text>
+												</Box>
+											)}
+											{price.note && (
+												<Box bg="yellow.50" _dark={{ bg: "yellow.900" }} p={3} borderRadius="md">
+													<Text fontSize="sm" color="gray.700" _dark={{ color: "gray.300" }}>
+														<Text as="span" fontWeight="semibold">Napomena: </Text>
+														{price.note}
+													</Text>
+												</Box>
+											)}
+											<Button
+												size="sm"
+												variant="outline"
+												leftIcon={<FiEdit2 />}
+												onClick={() => {
+													setNewPriceValue(price.price.toString());
+													setNewPriceDesc(price.description || "");
+													setNewPriceIncludedItemsDetails(price.includedItemsDetails || []);
+													setNewPriceAdditionalBenefits(price.additionalBenefits || "");
+													setNewPriceNote(price.note || "");
+												}}
+												borderRadius="md"
+											>
+												Učitaj za izmenu
+											</Button>
+										</VStack>
+									</Card>
+								) : null}
+							</Stack>
+						</AccordionPanel>
+					</AccordionItem>
+
 					{/* Recenzije */}
 					<AccordionItem mb={6} borderRadius="xl" overflow="hidden" boxShadow="lg" bg="white" _dark={{ bg: "gray.800" }}>
 						<AccordionButton

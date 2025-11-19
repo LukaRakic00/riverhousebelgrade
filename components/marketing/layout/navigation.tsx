@@ -34,9 +34,9 @@ const Navigation: React.FC<NavigationProps> = ({ position = 'left' }) => {
   }, [mobileNav.isOpen])
 
   // Levo: samo "O nama"
-  // Desno: "Galerija" i "Kontakt"
+  // Desno: "Galerija", "Cenovnik" i "Kontakt"
   const leftLinks = siteConfig.header.links.filter(({ id }) => id === 'o-nama')
-  const rightLinks = siteConfig.header.links.filter(({ id }) => id === 'galerija' || id === 'kontakt')
+  const rightLinks = siteConfig.header.links.filter(({ id }) => id === 'galerija' || id === 'cenovnik' || id === 'kontakt')
   const linksToShow = position === 'left' ? leftLinks : rightLinks
 
   return (
